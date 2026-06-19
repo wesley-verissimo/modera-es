@@ -320,23 +320,45 @@ function rDores(){
   var s=document.getElementById('ds'),e=document.getElementById('de');
   var sk=s?s.value:'',ek=e?e.value:'';
   var filt=DBM.filter(function(d){return(!sk||d.key>=sk)&&(!ek||d.key<=ek);});
-  var tCh=filt.reduce(function(a,d){return a+d.total;},0);
-  var tAc=filt.reduce(function(a,d){return a+d.aceitas;},0);
+
+  // Agregar por dor a partir dos dados filtrados
   var dMap={};
-  filt.forEach(function(d){if(!dMap[d.dor])dMap[d.dor]={dor:d.dor,total:0,notaSum:0,aceitas:0};dMap[d.dor].total+=d.total;dMap[d.dor].notaSum+=d.notaSum;dMap[d.dor].aceitas+=d.aceitas;});
+  filt.forEach(function(d){
+    if(!dMap[d.dor])dMap[d.dor]={dor:d.dor,total:0,notaSum:0,aceitas:0};
+    dMap[d.dor].total+=d.total;
+    dMap[d.dor].notaSum+=d.notaSum;
+    dMap[d.dor].aceitas+=d.aceitas;
+  });
   var all=Object.values(dMap);
-  var top15=TOP15;
-  var topAce=all.filter(function(d){return d.aceitas>0;}).sort(function(a,b){return b.aceitas-a.aceitas;}).slice(0,15).map(function(d){return {dor:d.dor,aceitas:d.aceitas,total:d.total};});
+
+  // Top 15 por volume — filtrado
+  var top15=all.slice().sort(function(a,b){return b.total-a.total;}).slice(0,15)
+    .map(function(d){return {dor:d.dor,total:d.total,aceitas:d.aceitas,media:d.total?+(d.notaSum/d.total).toFixed(2):0};});
+
+  // Aceitas por dor — filtrado
+  var topAce=all.filter(function(d){return d.aceitas>0;})
+    .sort(function(a,b){return b.aceitas-a.aceitas;}).slice(0,15)
+    .map(function(d){return {dor:d.dor,aceitas:d.aceitas,total:d.total};});
+
   var maxV=top15[0]?top15[0].total:1;
   var maxA=topAce[0]?topAce[0].aceitas:1;
-  var tCh15=TOP15.reduce(function(a,d){return a+d.total;},0);
-  var tAc15=TOP15.reduce(function(a,d){return a+d.aceitas;},0);
-  si('d-mk',[{l:'Chamados (Top 15)',v:fmt(tCh15),c:CC.p},{l:'Aceitas (Top 15)',v:fmt(tAc15),c:CC.a},{l:'% Moderações realizadas',v:pct(tAc15,tCh15)+'%',c:CC.b}].map(function(k){return '<div class="mkpi"><div class="mkpi-v" style="color:'+k.c+'">'+k.v+'</div><div class="mkpi-l">'+k.l+'</div></div>';}).join(''));
+
+  // KPIs calculados do top 15 filtrado
+  var tCh15=top15.reduce(function(a,d){return a+d.total;},0);
+  var tAc15=top15.reduce(function(a,d){return a+d.aceitas;},0);
+
+  si('d-mk',[
+    {l:'Chamados (Top 15)',v:fmt(tCh15),c:CC.p},
+    {l:'Aceitas (Top 15)',v:fmt(tAc15),c:CC.a},
+    {l:'% Moderações realizadas',v:pct(tAc15,tCh15)+'%',c:CC.b}
+  ].map(function(k){return '<div class="mkpi"><div class="mkpi-v" style="color:'+k.c+'">'+k.v+'</div><div class="mkpi-l">'+k.l+'</div></div>';}).join(''));
+
   si('d-pills',[
-    {l:'Total de chamados negativos',v:fmt(tCh15),c:CC.p,bg:'#FFF0F7',s:'Top 15 dores'},
-    {l:'Total moderações aceitas',v:fmt(tAc15),c:CC.a,bg:'#F0FDF8',s:'Top 15 dores'},
+    {l:'Total de chamados negativos',v:fmt(tCh15),c:CC.p,bg:'#FFF0F7',s:'Top 15 dores do período'},
+    {l:'Total moderações aceitas',v:fmt(tAc15),c:CC.a,bg:'#F0FDF8',s:'Top 15 dores do período'},
     {l:'% Moderações realizadas',v:pct(tAc15,tCh15)+'%',c:CC.b,bg:'#EFF6FF',s:'Aceitas ÷ chamados top 15'}
   ].map(function(p){return '<div class="pill" style="background:'+p.bg+';border-color:'+p.c+'33"><div class="pill-l">'+p.l+'</div><div class="pill-v" style="color:'+p.c+'">'+p.v+'</div><div class="pill-s">'+p.s+'</div></div>';}).join(''));
+
   si('d-th',tr0(['#','Dor Enjoei — Novas','Chamados','Proporção','Aceitas','Nota média']));
   si('d-tb',top15.map(function(d,i){
     var vp=Math.round(d.total/maxV*100);
@@ -351,24 +373,28 @@ function rDores(){
       +'<td><span class="badge" style="background:'+nc+'18;color:'+nc+'">'+d.media.toFixed(2)+'</span></td>'
       +'</tr>';
   }).join(''));
-  st('d-ace-tot','Total: '+fmt(tAc)+' moderações aceitas');
+
+  st('d-ace-tot','Total: '+fmt(tAc15)+' moderações aceitas');
   var BGCOLS=['#00A878','#00958A','#00827D','#006F6F','#005C62','#004955','#003648','#002337','#001026'];
-  si('d-ace',topAce.length===0?'<div class="cm" style="padding:16px 0;font-size:13px">Nenhuma moderação aceita no período</div>':topAce.map(function(d,i){
-    var bp=Math.round(d.aceitas/maxA*100);
-    var ta=d.total?pct(d.aceitas,d.total):0;
-    var bc=BGCOLS[Math.min(i,BGCOLS.length-1)];
-    return '<div style="margin-bottom:14px">'
-      +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">'
-      +'<span style="color:#1E293B;font-size:12px;flex:1;padding-right:12px;line-height:1.4">'+d.dor+'</span>'
-      +'<div style="display:flex;gap:10px;align-items:center;white-space:nowrap">'
-      +'<span style="color:'+bc+';font-weight:800;font-size:15px">'+fmt(d.aceitas)+'</span>'
-      +(d.total?'<span class="cm" style="font-size:11px">/ '+fmt(d.total)+' ('+ta+'%)</span>':'')
-      +'</div></div>'
-      +'<div style="position:relative;background:#F1F5F9;border-radius:6px;height:26px;overflow:hidden">'
-      +'<div style="position:absolute;left:0;top:0;height:100%;width:'+bp+'%;background:'+bc+';border-radius:6px;min-width:'+(d.aceitas>0?36:0)+'px"></div>'
-      +(bp>8?'<span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.25)">'+fmt(d.aceitas)+'</span>':'')
-      +'</div></div>';
-  }).join(''));
+  si('d-ace',topAce.length===0
+    ?'<div class="cm" style="padding:16px 0;font-size:13px">Nenhuma moderação aceita no período</div>'
+    :topAce.map(function(d,i){
+      var bp=Math.round(d.aceitas/maxA*100);
+      var ta=d.total?pct(d.aceitas,d.total):0;
+      var bc=BGCOLS[Math.min(i,BGCOLS.length-1)];
+      return '<div style="margin-bottom:14px">'
+        +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">'
+        +'<span style="color:#1E293B;font-size:12px;flex:1;padding-right:12px;line-height:1.4">'+d.dor+'</span>'
+        +'<div style="display:flex;gap:10px;align-items:center;white-space:nowrap">'
+        +'<span style="color:'+bc+';font-weight:800;font-size:15px">'+fmt(d.aceitas)+'</span>'
+        +(d.total?'<span class="cm" style="font-size:11px">/ '+fmt(d.total)+' ('+ta+'%)</span>':'')
+        +'</div></div>'
+        +'<div style="position:relative;background:#F1F5F9;border-radius:6px;height:26px;overflow:hidden">'
+        +'<div style="position:absolute;left:0;top:0;height:100%;width:'+bp+'%;background:'+bc+';border-radius:6px;min-width:'+(d.aceitas>0?36:0)+'px"></div>'
+        +(bp>8?'<span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.25)">'+fmt(d.aceitas)+'</span>':'')
+        +'</div></div>';
+    }).join('')
+  );
 }
 
 /* DIÁRIA */
@@ -466,16 +492,48 @@ function doUpload(inp){
       TOP15=Object.values(allDors).sort(function(a,b){return b.total-a.total;}).slice(0,15).map(function(d){return {dor:d.dor,total:d.total,aceitas:d.aceitas,media:d.total?+(d.notaSum/d.total).toFixed(2):0};});
       document.getElementById('ovl').classList.remove('on');
       inp.value='';
+      saveData();
       var ok=document.getElementById('uok');ok.textContent='✓ '+fmt(BTOTAL)+' registros';ok.style.display='block';
       init();
-      toast('✅ Base atualizada! '+fmt(BTOTAL)+' chamados.');
+      toast('✅ Base atualizada e salva! '+fmt(BTOTAL)+' chamados.');
     }catch(err){document.getElementById('ovl').classList.remove('on');console.error(err);toast('❌ Erro ao ler o arquivo.');}
   };
   reader.readAsArrayBuffer(inp.files[0]);
 }
 
 /* INIT */
+var DKEY='enjoei_base_v1';
+
+function saveData(){
+  try{
+    localStorage.setItem(DKEY,JSON.stringify({
+      BTOTAL:BTOTAL,BACEITA:BACEITA,BNACEITA:BNACEITA,BPEND:BPEND,
+      BMS:BMS,MOT:MOT,DBM:DBM,TOP15:TOP15,DIR_DATA:DIR_DATA,
+      savedAt:new Date().toISOString()
+    }));
+  }catch(e){console.warn('Erro ao salvar dados:',e);}
+}
+
+function loadData(){
+  try{
+    var raw=localStorage.getItem(DKEY);
+    if(!raw)return false;
+    var d=JSON.parse(raw);
+    BTOTAL=d.BTOTAL;BACEITA=d.BACEITA;BNACEITA=d.BNACEITA;BPEND=d.BPEND;
+    BMS=d.BMS;MOT=d.MOT;DBM=d.DBM;TOP15=d.TOP15;DIR_DATA=d.DIR_DATA;
+    var ok=document.getElementById('uok');
+    if(ok){
+      var dt=new Date(d.savedAt);
+      var dtStr=('0'+dt.getDate()).slice(-2)+'/'+('0'+(dt.getMonth()+1)).slice(-2)+'/'+dt.getFullYear();
+      ok.textContent='✓ Base de '+dtStr+' ('+fmt(BTOTAL)+' registros)';
+      ok.style.display='block';
+    }
+    return true;
+  }catch(e){return false;}
+}
+
 function init(){
+  loadData();
   rGeral();
   fillSel('ps','pe',BMS);rPeriodo();
   fillMSel('ms','me');rMotivo();
