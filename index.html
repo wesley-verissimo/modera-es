@@ -556,16 +556,20 @@ var ADMIN_PASS   = '0000';
 var DKEY = 'enjoei_base_v1'; // fallback local
 
 function getPayload(){
+  // Compacta DBM removendo notaSum (recalculado como media*total) para reduzir tamanho
+  var dbmComp=DBM.map(function(d){return {key:d.key,dor:d.dor,total:d.total,media:d.total?+(d.notaSum/d.total).toFixed(2):0,aceitas:d.aceitas};});
   return {
     BTOTAL:BTOTAL,BACEITA:BACEITA,BNACEITA:BNACEITA,BPEND:BPEND,
-    BMS:BMS,MOT:MOT,DBM:DBM,TOP15:TOP15,DIR_DATA:DIR_DATA,
+    BMS:BMS,MOT:MOT,DBM:dbmComp,TOP15:TOP15,DIR_DATA:DIR_DATA,
     savedAt:new Date().toISOString()
   };
 }
 
 function applyPayload(d){
   BTOTAL=d.BTOTAL;BACEITA=d.BACEITA;BNACEITA=d.BNACEITA;BPEND=d.BPEND;
-  BMS=d.BMS;MOT=d.MOT;DBM=d.DBM;TOP15=d.TOP15;DIR_DATA=d.DIR_DATA;
+  BMS=d.BMS;MOT=d.MOT;TOP15=d.TOP15;DIR_DATA=d.DIR_DATA;
+  // Reconstrói DBM com notaSum a partir de media*total
+  DBM=(d.DBM||[]).map(function(r){return {key:r.key,dor:r.dor,total:r.total,notaSum:r.media?+(r.media*r.total).toFixed(1):0,aceitas:r.aceitas};});
   var ok=document.getElementById('uok');
   if(ok&&d.savedAt){
     var dt=new Date(d.savedAt);
@@ -577,21 +581,43 @@ function applyPayload(d){
 
 function saveCloud(onDone){
   var payload=getPayload();
-  // Salva também local como fallback
-  try{localStorage.setItem(DKEY,JSON.stringify(payload));}catch(e){}
+  var payloadStr=JSON.stringify(payload);
+  var sizeKB=Math.round(payloadStr.length/1024);
+
+  // Salva local como fallback sempre
+  try{localStorage.setItem(DKEY,payloadStr);}catch(e){}
 
   if(!JSONBIN_KEY||!JSONBIN_BIN){
     if(onDone)onDone(false);
     return;
   }
+
+  if(sizeKB>95){
+    toast('⚠️ Dados muito grandes ('+sizeKB+'KB). Reduza a base e tente novamente.');
+    if(onDone)onDone(false);
+    return;
+  }
+
   var url='https://api.jsonbin.io/v3/b/'+JSONBIN_BIN;
   fetch(url,{
     method:'PUT',
     headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY,'X-Bin-Versioning':'false'},
-    body:JSON.stringify(payload)
+    body:payloadStr
   }).then(function(r){
-    if(onDone)onDone(r.ok);
-  }).catch(function(){if(onDone)onDone(false);});
+    if(!r.ok){
+      r.text().then(function(txt){
+        console.error('JSONBin erro '+r.status+':',txt);
+        toast('❌ Erro ao salvar na nuvem ('+r.status+'). Verifique o console.');
+      });
+      if(onDone)onDone(false);
+    }else{
+      if(onDone)onDone(true);
+    }
+  }).catch(function(err){
+    console.error('JSONBin fetch error:',err);
+    toast('❌ Sem conexão com a nuvem. Dados salvos só localmente.');
+    if(onDone)onDone(false);
+  });
 }
 
 function loadCloud(onDone){
