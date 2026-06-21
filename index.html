@@ -556,23 +556,47 @@ var ADMIN_PASS   = '0000';
 var DKEY = 'enjoei_base_v1'; // fallback local
 
 function getPayload(){
-  // Compacta DBM removendo notaSum (recalculado como media*total) para reduzir tamanho
-  var dbmComp=DBM.map(function(d){return {key:d.key,dor:d.dor,total:d.total,media:d.total?+(d.notaSum/d.total).toFixed(2):0,aceitas:d.aceitas};});
+  // DBM compactado: chaves curtas k/d/t/m/a em vez de key/dor/total/media/aceitas
+  var dbmMin=DBM.map(function(d){
+    var media=d.total?(d.notaSum?+(d.notaSum/d.total).toFixed(2):(d.media||0)):0;
+    return {k:d.key,d:d.dor,t:d.total,m:media,a:d.aceitas};
+  });
+  // DIR compactado: chaves curtas
+  var dirMin=DIR_DATA.map(function(r){return {i:r.id,dt:r.data,ms:r.mes,iv:r.iv,dr:r.dor};});
   return {
-    BTOTAL:BTOTAL,BACEITA:BACEITA,BNACEITA:BNACEITA,BPEND:BPEND,
-    BMS:BMS,MOT:MOT,DBM:dbmComp,TOP15:TOP15,DIR_DATA:DIR_DATA,
-    savedAt:new Date().toISOString()
+    T:BTOTAL,A:BACEITA,N:BNACEITA,P:BPEND,
+    BMS:BMS,MOT:MOT,DBM:dbmMin,TOP:TOP15,DIR:dirMin,
+    ts:new Date().toISOString()
   };
 }
 
 function applyPayload(d){
-  BTOTAL=d.BTOTAL;BACEITA=d.BACEITA;BNACEITA=d.BNACEITA;BPEND=d.BPEND;
-  BMS=d.BMS;MOT=d.MOT;TOP15=d.TOP15;DIR_DATA=d.DIR_DATA;
-  // Reconstrói DBM com notaSum a partir de media*total
-  DBM=(d.DBM||[]).map(function(r){return {key:r.key,dor:r.dor,total:r.total,notaSum:r.media?+(r.media*r.total).toFixed(1):0,aceitas:r.aceitas};});
+  BTOTAL=d.T||d.BTOTAL||0;
+  BACEITA=d.A||d.BACEITA||0;
+  BNACEITA=d.N||d.BNACEITA||0;
+  BPEND=d.P||d.BPEND||0;
+  BMS=d.BMS||[];
+  MOT=d.MOT||[];
+  TOP15=d.TOP||d.TOP15||[];
+  // Reconstrói DBM com chaves longas
+  var raw=d.DBM||[];
+  DBM=raw.map(function(r){
+    // suporta formato curto (k/d/t/m/a) e longo (key/dor/total...)
+    var key=r.k||r.key||'';
+    var dor=r.d||r.dor||'';
+    var total=r.t||r.total||0;
+    var media=r.m||r.media||0;
+    var aceitas=r.a||r.aceitas||0;
+    return {key:key,dor:dor,total:total,notaSum:+(media*total).toFixed(1),aceitas:aceitas};
+  });
+  // Reconstrói DIR_DATA
+  var rawDir=d.DIR||d.DIR_DATA||[];
+  DIR_DATA=rawDir.map(function(r){
+    return {id:r.i||r.id||'',data:r.dt||r.data||'',mes:r.ms||r.mes||'',iv:r.iv||'',dor:r.dr||r.dor||''};
+  });
   var ok=document.getElementById('uok');
-  if(ok&&d.savedAt){
-    var dt=new Date(d.savedAt);
+  if(ok&&(d.ts||d.savedAt)){
+    var dt=new Date(d.ts||d.savedAt);
     var dtStr=('0'+dt.getDate()).slice(-2)+'/'+('0'+(dt.getMonth()+1)).slice(-2)+'/'+dt.getFullYear();
     ok.textContent='✓ Base de '+dtStr+' ('+fmt(BTOTAL)+' registros)';
     ok.style.display='block';
