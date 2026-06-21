@@ -598,24 +598,26 @@ function saveCloud(onDone){
     return;
   }
 
+  st('omsg','Salvando na nuvem ('+sizeKB+'KB)...');
   var url='https://api.jsonbin.io/v3/b/'+JSONBIN_BIN;
   fetch(url,{
     method:'PUT',
     headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY,'X-Bin-Versioning':'false'},
     body:payloadStr
   }).then(function(r){
-    if(!r.ok){
-      r.text().then(function(txt){
-        console.error('JSONBin erro '+r.status+':',txt);
-        toast('❌ Erro ao salvar na nuvem ('+r.status+'). Verifique o console.');
-      });
+    return r.text().then(function(txt){return {ok:r.ok,status:r.status,txt:txt};});
+  }).then(function(res){
+    if(!res.ok){
+      var msg='Erro JSONBin '+res.status+':\n'+res.txt.slice(0,200);
+      alert(msg);
+      console.error(msg);
       if(onDone)onDone(false);
     }else{
       if(onDone)onDone(true);
     }
   }).catch(function(err){
+    alert('Erro de conexão com JSONBin:\n'+err.toString());
     console.error('JSONBin fetch error:',err);
-    toast('❌ Sem conexão com a nuvem. Dados salvos só localmente.');
     if(onDone)onDone(false);
   });
 }
