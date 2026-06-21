@@ -549,8 +549,8 @@ function doUpload(inp){
 /* STORAGE COMPARTILHADO (JSONBin.io) */
 // Para configurar: crie conta em jsonbin.io, gere uma Master Key e crie um bin.
 // Cole os valores abaixo. Todos que acessarem o link verão os dados atualizados.
-var JSONBIN_KEY  = '$2a$10$tQyX/6ktUWUvMuxcQVsQEO.2yR33hLRMQsdreXJ8vYLHGq8pyZaVK';
-var JSONBIN_BIN  = '6a381039f5f4af5e2918ed4c';
+var JSONBIN_KEY  = '$2a$10$NVJf3rwo0pKOudDzbV0fq.vQwGPxe6EnqyNZDvgfeTFTjLFhvSu5a';
+var JSONBIN_BIN  = '6a381430f5f4af5e2918fb06';
 var ADMIN_PASS   = '0000';
 
 var DKEY = 'enjoei_base_v1'; // fallback local
@@ -593,7 +593,14 @@ function saveCloud(onDone){
   }
 
   if(sizeKB>95){
-    toast('⚠️ Dados muito grandes ('+sizeKB+'KB). Reduza a base e tente novamente.');
+    toast('⚠️ Dados muito grandes ('+sizeKB+'KB).');
+    if(onDone)onDone(false);
+    return;
+  }
+
+  // Valida formato da key
+  if(JSONBIN_KEY.indexOf('$2a$')!==0&&JSONBIN_KEY.indexOf('$2b$')!==0){
+    alert('JSONBIN_KEY inválida.\nFormato esperado: $2a$10$...\nValor atual: '+JSONBIN_KEY.slice(0,20)+'...');
     if(onDone)onDone(false);
     return;
   }
@@ -602,13 +609,17 @@ function saveCloud(onDone){
   var url='https://api.jsonbin.io/v3/b/'+JSONBIN_BIN;
   fetch(url,{
     method:'PUT',
-    headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY,'X-Bin-Versioning':'false'},
+    headers:{
+      'Content-Type':'application/json',
+      'X-Master-Key':JSONBIN_KEY,
+      'X-Bin-Versioning':'false'
+    },
     body:payloadStr
   }).then(function(r){
     return r.text().then(function(txt){return {ok:r.ok,status:r.status,txt:txt};});
   }).then(function(res){
     if(!res.ok){
-      var msg='Erro JSONBin '+res.status+':\n'+res.txt.slice(0,200);
+      var msg='Erro JSONBin '+res.status+':\n'+res.txt.slice(0,300);
       alert(msg);
       console.error(msg);
       if(onDone)onDone(false);
@@ -616,8 +627,7 @@ function saveCloud(onDone){
       if(onDone)onDone(true);
     }
   }).catch(function(err){
-    alert('Erro de conexão com JSONBin:\n'+err.toString());
-    console.error('JSONBin fetch error:',err);
+    alert('Erro de conexão:\n'+err.toString());
     if(onDone)onDone(false);
   });
 }
@@ -635,7 +645,8 @@ function loadCloud(onDone){
   st('omsg','Carregando dados...');
   document.getElementById('ovl').classList.add('on');
   var url='https://api.jsonbin.io/v3/b/'+JSONBIN_BIN+'/latest';
-  fetch(url,{headers:{'X-Master-Key':JSONBIN_KEY}})
+  // Tenta primeiro sem autenticação (bin público), depois com Master Key (bin privado)
+  fetch(url,{headers:{'X-Master-Key':JSONBIN_KEY,'X-Access-Key':JSONBIN_KEY}})
     .then(function(r){return r.json();})
     .then(function(json){
       if(json&&json.record){
