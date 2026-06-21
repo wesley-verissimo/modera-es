@@ -549,7 +549,7 @@ function doUpload(inp){
 /* STORAGE COMPARTILHADO (JSONBin.io) */
 // Para configurar: crie conta em jsonbin.io, gere uma Master Key e crie um bin.
 // Cole os valores abaixo. Todos que acessarem o link verão os dados atualizados.
-var JSONBIN_KEY  = '$2a$10$NVJf3rwo0pKOudDzbV0fq.vQwGPxe6EnqyNZDvgfeTFTjLFhvSu5a';
+var JSONBIN_KEY  = '$2a$10$tQyX/6ktUWUvMuxcQVsQEO.2yR33hLRMQsdreXJ8vYLHGq8pyZaVK';
 var JSONBIN_BIN  = '6a381430f5f4af5e2918fb06';
 var ADMIN_PASS   = '0000';
 
@@ -645,8 +645,7 @@ function loadCloud(onDone){
   st('omsg','Carregando dados...');
   document.getElementById('ovl').classList.add('on');
   var url='https://api.jsonbin.io/v3/b/'+JSONBIN_BIN+'/latest';
-  // Tenta primeiro sem autenticação (bin público), depois com Master Key (bin privado)
-  fetch(url,{headers:{'X-Master-Key':JSONBIN_KEY,'X-Access-Key':JSONBIN_KEY}})
+  fetch(url)
     .then(function(r){return r.json();})
     .then(function(json){
       if(json&&json.record){
