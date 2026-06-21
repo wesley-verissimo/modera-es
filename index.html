@@ -481,10 +481,6 @@ function rDiaria(){
 /* UPLOAD */
 function doUpload(inp){
   if(!inp.files[0])return;
-  // Verificação de senha se configurada
-  if(ADMIN_PASS&&prompt('Senha de administrador:')!==ADMIN_PASS){
-    toast('❌ Senha incorreta.');inp.value='';return;
-  }
   document.getElementById('ovl').classList.add('on');
   st('omsg','Lendo arquivo...');
   var reader=new FileReader();
