@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>enjoei · moderações</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -206,6 +207,12 @@ tr:nth-child(even) td{background:#FAFBFD}
 <script>
 var CC={p:'#E8006F',a:'#00A878',b:'#2563EB',w:'#D97706',r:'#DC2626',v:'#7C3AED',t:'#1E293B',s:'#64748B',m:'#94A3B8',bd:'#E2E8F0',ch:'#F1F5F9'};
 var CHS={};
+// Desativa datalabels globalmente — só ativa onde necessário
+window.addEventListener('DOMContentLoaded',function(){
+  if(window.ChartDataLabels){
+    Chart.unregister(ChartDataLabels);
+  }
+});
 
 var BTOTAL=6110,BACEITA=886,BNACEITA=412,BPEND=4;
 
@@ -294,7 +301,9 @@ function rPeriodo(){
   si('p-mk',[{l:'Solicitadas',v:fmt(tS),c:CC.b},{l:'Aceitas',v:fmt(tA),c:CC.a},{l:'% Aceitas',v:pct(tA,tS)+'%',c:CC.a},{l:'Não aceitas',v:fmt(tN),c:CC.r},{l:'% Não aceitas',v:pct(tN,tS)+'%',c:CC.r}].map(function(k){return '<div class="mkpi"><div class="mkpi-v" style="color:'+k.c+'">'+k.v+'</div><div class="mkpi-l">'+k.l+'</div></div>';}).join(''));
   st('p-t1','Volume — '+data.length+' meses selecionados');
   st('p-t2','Tabela — '+data.length+' meses selecionados');
-  mkC('c3',{type:'bar',data:{labels:data.map(function(d){return d.label;}),datasets:[{label:'Aceitas',data:data.map(function(d){return d.aceita;}),backgroundColor:CC.a,borderRadius:4,barPercentage:.7},{label:'Não aceitas',data:data.map(function(d){return d.nao_aceita;}),backgroundColor:CC.r,borderRadius:4,barPercentage:.7}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:CC.s,font:{size:12}}}},scales:{x:{ticks:{color:CC.s},grid:{color:'#E2E8F022'}},y:{ticks:{color:CC.s},grid:{color:'#E2E8F066'}}}}});
+  mkC('c3',{type:'bar',
+    plugins:[window.ChartDataLabels].filter(Boolean),
+    data:{labels:data.map(function(d){return d.label;}),datasets:[{label:'Aceitas',data:data.map(function(d){return d.aceita;}),backgroundColor:CC.a,borderRadius:4,barPercentage:.7},{label:'Não aceitas',data:data.map(function(d){return d.nao_aceita;}),backgroundColor:CC.r,borderRadius:4,barPercentage:.7}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:CC.s,font:{size:12}}},datalabels:{anchor:'center',align:'center',color:'#fff',font:{size:11,weight:'bold'},formatter:function(v){return v>0?v:'';}}},scales:{x:{ticks:{color:CC.s},grid:{color:'#E2E8F022'}},y:{ticks:{color:CC.s},grid:{color:'#E2E8F066'}}}}});
   si('p-th',tr0(['Mês','Total','Aceitas','% Aceitas','Não Aceitas','% Não Aceitas','Pendentes']));
   si('p-tb',data.map(function(d,i){return '<tr style="background:'+(i%2?'#FAFBFD':'#fff')+'"><td class="fw7">'+d.label+'</td><td style="color:'+CC.b+'" class="fw7">'+fmt(d.total)+'</td><td style="color:'+CC.a+'" class="fw7">'+fmt(d.aceita)+'</td><td style="min-width:140px">'+pb(d.pct_aceita,CC.a)+'</td><td style="color:'+CC.r+'" class="fw7">'+fmt(d.nao_aceita)+'</td><td style="min-width:140px">'+pb(d.pct_nao_aceita,CC.r)+'</td><td style="color:'+CC.w+'" class="fw7">'+(d.pendente||'—')+'</td></tr>';}).join(''));
 
@@ -343,7 +352,9 @@ function rMotivo(){
   si('m-bars',tots.map(function(item){return '<div class="brow"><div class="brt"><div class="brl"><div class="dot" style="background:'+item.color+';border-radius:2px"></div>'+item.motivo+'</div><div style="display:flex;gap:10px;align-items:center"><span style="color:'+item.color+';font-weight:800;font-size:15px">'+fmt(item.count)+'</span><span class="cm" style="font-size:11px">'+pct(item.count,grand)+'%</span></div></div>'+pb(pct(item.count,grand),item.color)+'</div>';}).join(''));
   var mkFilt=[];filt.forEach(function(d){if(mkFilt.indexOf(d.key)<0)mkFilt.push(d.key);});mkFilt.sort();
   var pivot=mkFilt.map(function(k){var row={key:k,label:ml(k)};tots.forEach(function(t){row[t.motivo]=filt.filter(function(d){return d.key===k&&d.motivo===t.full;}).reduce(function(a,d){return a+d.count;},0);});return row;});
-  mkC('c4',{type:'bar',data:{labels:pivot.map(function(d){return d.label;}),datasets:tots.map(function(t){return {label:t.motivo,data:pivot.map(function(d){return d[t.motivo]||0;}),backgroundColor:t.color,stack:'a'};})},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:CC.s,font:{size:11}}}},scales:{x:{stacked:true,ticks:{color:CC.s},grid:{color:'#E2E8F022'}},y:{stacked:true,ticks:{color:CC.s},grid:{color:'#E2E8F066'}}}}});
+  mkC('c4',{type:'bar',
+    plugins:[window.ChartDataLabels].filter(Boolean),
+    data:{labels:pivot.map(function(d){return d.label;}),datasets:tots.map(function(t){return {label:t.motivo,data:pivot.map(function(d){return d[t.motivo]||0;}),backgroundColor:t.color,stack:'a'};})},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:CC.s,font:{size:11}}},datalabels:{anchor:'center',align:'center',color:'#fff',font:{size:10,weight:'bold'},formatter:function(v){return v>0?v:'';}}},scales:{x:{stacked:true,ticks:{color:CC.s},grid:{color:'#E2E8F022'}},y:{stacked:true,ticks:{color:CC.s},grid:{color:'#E2E8F066'}}}}});
   si('m-th',tr0(['Mês','Total'].concat(tots.map(function(t){return t.motivo;}))));
   si('m-tb',pivot.map(function(d,i){var rt=tots.reduce(function(a,t){return a+(d[t.motivo]||0);},0);return '<tr style="background:'+(i%2?'#FAFBFD':'#fff')+'"><td class="fw7">'+d.label+'</td><td style="color:'+CC.b+'" class="fw7">'+rt+'</td>'+tots.map(function(t){return '<td>'+(d[t.motivo]>0?'<span style="color:'+t.color+';font-weight:700">'+d[t.motivo]+'</span>':'<span class="cm">—</span>')+'</td>';}).join('')+'</tr>';}).join(''));
 }
