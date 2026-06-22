@@ -249,7 +249,7 @@ function go(id,btn){
   if(id==='periodo'){fillSel('ps','pe',BMS);rPeriodo();}
   if(id==='motivo'){fillMSel('ms','me');rMotivo();}
   if(id==='dores'){fillMSel('ds','de');rDores();}
-  if(id==='diaria'){fillDiaria();rDiaria();}
+  if(id==='diaria'){loadMarksCloud(function(){fillDiaria();rDiaria();});}
 }
 
 function fillSel(sid,eid,arr){
@@ -443,9 +443,65 @@ function rDores(){
 
 /* DIÁRIA */
 var MKEY='enjoei_diaria_v1';
+
 function loadM(){try{return JSON.parse(localStorage.getItem(MKEY)||'{}');}catch(e){return {};}}
-function saveM(id,v){var m=loadM();m[id]=v;localStorage.setItem(MKEY,JSON.stringify(m));rDiaria();}
-function resetMarcacoes(){if(!confirm('Limpar todas as marcações manuais?'))return;localStorage.removeItem(MKEY);rDiaria();toast('✅ Marcações limpas.');}
+
+function saveM(id,v){
+  var m=loadM();m[id]=v;
+  localStorage.setItem(MKEY,JSON.stringify(m));
+  rDiaria();
+  saveMarksCloud(m);
+}
+
+function saveMarksCloud(marks){
+  if(!JSONBIN_KEY||!JSONBIN_BIN)return;
+  var mBinId=localStorage.getItem('enjoei_marks_bin');
+  if(!mBinId){
+    fetch('https://api.jsonbin.io/v3/b',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY,'X-Bin-Name':'enjoei-marks','X-Bin-Private':'false'},
+      body:JSON.stringify({M:marks})
+    }).then(function(r){return r.json();}).then(function(j){
+      if(j&&j.metadata&&j.metadata.id){
+        localStorage.setItem('enjoei_marks_bin',j.metadata.id);
+      }
+    }).catch(function(e){console.warn('Erro ao criar bin marcações:',e);});
+  }else{
+    fetch('https://api.jsonbin.io/v3/b/'+mBinId,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY,'X-Bin-Versioning':'false'},
+      body:JSON.stringify({M:marks})
+    }).catch(function(e){console.warn('Erro ao salvar marcações:',e);});
+  }
+}
+
+function loadMarksCloud(onDone){
+  var mBinId=localStorage.getItem('enjoei_marks_bin');
+  if(!mBinId||!JSONBIN_KEY){if(onDone)onDone();return;}
+  fetch('https://api.jsonbin.io/v3/b/'+mBinId+'/latest',{
+    headers:{'X-Master-Key':JSONBIN_KEY}
+  }).then(function(r){return r.json();})
+  .then(function(j){
+    if(j&&j.record&&j.record.M){
+      localStorage.setItem(MKEY,JSON.stringify(j.record.M));
+    }
+    if(onDone)onDone();
+  }).catch(function(){if(onDone)onDone();});
+}
+
+function resetMarcacoes(){
+  if(!confirm('Limpar todas as marcações manuais?'))return;
+  localStorage.removeItem(MKEY);
+  var mBinId=localStorage.getItem('enjoei_marks_bin');
+  if(mBinId&&JSONBIN_KEY){
+    fetch('https://api.jsonbin.io/v3/b/'+mBinId,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY,'X-Bin-Versioning':'false'},
+      body:JSON.stringify({M:{}})
+    }).catch(function(){});
+  }
+  rDiaria();toast('✅ Marcações limpas para todos.');
+}
 function fillDiaria(){
   var meses=[];DIR_DATA.forEach(function(d){if(meses.indexOf(d.mes)<0)meses.push(d.mes);});meses.sort();
   var s=document.getElementById('drs'),e=document.getElementById('dre');
@@ -703,7 +759,7 @@ function init(){
     fillSel('ps','pe',BMS);rPeriodo();
     fillMSel('ms','me');rMotivo();
     fillMSel('ds','de');rDores();
-    fillDiaria();rDiaria();
+    loadMarksCloud(function(){fillDiaria();rDiaria();});
   });
 }
 window.addEventListener('DOMContentLoaded',init);
