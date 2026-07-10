@@ -75,6 +75,7 @@ body.dark [style*="background:#F1F5F9;border-radius:6px"]{background:#2D3748 !im
 /* Toast e overlay */
 body.dark #omsg{color:#CBD5E1}
 .hdr{background:#fff;border-bottom:1px solid #E2E8F0;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.hdr-right{display:flex;align-items:center;gap:16px}
 .hbar{width:4px;height:28px;background:#440041;border-radius:2px}
 .htitle{font-size:20px;font-weight:800;letter-spacing:-.01em}
 .hsub{color:#94A3B8;font-size:12px;margin-top:3px;padding-left:14px}
@@ -153,12 +154,14 @@ tr:nth-child(even) td{background:#FAFBFD}
     </div>
     <div class="hsub" id="hsub">Out/2025 – Jun/2026</div>
   </div>
-  <div class="hkpis" id="hkpis"></div>
-  <button class="dm-btn" onclick="toggleDark()" id="dm-btn" title="Alternar modo claro/escuro">
-    <svg id="dm-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-      <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/>
-    </svg>
-  </button>
+  <div class="hdr-right">
+    <div class="hkpis" id="hkpis"></div>
+    <button class="dm-btn" onclick="toggleDark()" id="dm-btn" title="Alternar modo claro/escuro">
+      <svg id="dm-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/>
+      </svg>
+    </button>
+  </div>
 </div>
 
 <div class="nav">
