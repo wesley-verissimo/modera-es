@@ -693,11 +693,8 @@ function doUpload(inp){
         if(dt&&!isNaN(dt.getTime())){
           mes=dt.getFullYear()+'-'+('0'+(dt.getMonth()+1)).slice(-2);
           fdata=('0'+dt.getDate()).slice(-2)+'/'+('0'+(dt.getMonth()+1)).slice(-2)+'/'+dt.getFullYear();
-          var jan4=new Date(iso.getFullYear(),0,4);var dow=jan4.getDay()||7;var sw=new Date(jan4);sw.setDate(jan4.getDate()-(dow-1));
-          var wn=Math.floor((dt-sw)/604800000)+1;
-          // Usa o ano ISO (pode ser diferente do ano da data na virada de ano)
-          var isoYear=iso.getFullYear(); var isoWeek=iso.getDay()||7; // não usado, usamos isocalendar
-          // Recalcula usando getTime para ISO year correto
+          var jan4=new Date(dt.getFullYear(),0,4);var dow=jan4.getDay()||7;var sw=new Date(jan4);sw.setDate(jan4.getDate()-(dow-1));
+          // ISO week: usa a quinta-feira da semana para determinar o ano correto
           var thu=new Date(dt);thu.setDate(dt.getDate()-(dt.getDay()||7)+4);
           var isoY=thu.getFullYear();
           var jan4b=new Date(isoY,0,4);var dow4=jan4b.getDay()||7;var sw4=new Date(jan4b);sw4.setDate(jan4b.getDate()-(dow4-1));
