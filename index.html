@@ -701,7 +701,7 @@ function doUpload(inp){
           var wNum=Math.ceil((thu-sw4)/604800000);
           sem=isoY+'-W'+('0'+wNum).slice(-2);
         }
-        return{id:String(col(r,'id hugme')||col(r,'id')||''),nota:parseFloat(col(r,'nota'))||0,dor:String(col(r,'dores enjoei')||col(r,'dores')||'').trim(),iv:String(col(r,'intervenção')||col(r,'intervencao')||'').trim(),ms:String(col(r,'moderação status')||col(r,'moderacao status')||'').trim(),mm:String(col(r,'moderação motivo')||col(r,'moderacao motivo')||'').trim(),dr:String(col(r,'diretriz de resposta')||col(r,'diretriz')||'').trim(),mes:mes,sem:sem,fdata:fdata};
+        return{id:String(col(r,'id hugme')||col(r,'id')||''),nota:parseFloat(col(r,'nota'))||0,dor:String(col(r,'dores enjoei')||col(r,'dores')||'').trim(),iv:String(col(r,'intervenção')||col(r,'intervencao')||'').trim(),ms:String(col(r,'moderação status')||col(r,'moderacao status')||'').trim(),mm:String(col(r,'moderação motivo')||col(r,'moderacao motivo')||'').trim(),dr:String(col(r,'diretriz de resposta')||col(r,'diretriz')||'').trim(),mes:mes,sem:sem,fdata:fdata,_dt:dt};
       }).filter(function(r){return r.nota>=0&&r.nota<=5;});
       if(!parsed.length){document.getElementById('ovl').classList.remove('on');toast('⚠️ Nenhum dado válido.');return;}
       var acc=0,nacc=0,pnd=0,notaSum=0;
@@ -724,7 +724,7 @@ function doUpload(inp){
         }
         if(r.sem){
           if(!bwk[r.sem])bwk[r.sem]={total:0,notaSum:0,aceitas:0,nao_aceita:0,datas:[]};
-          bwk[r.sem].total++;bwk[r.sem].notaSum+=r.nota;bwk[r.sem].datas.push(new Date(dt));
+          bwk[r.sem].total++;bwk[r.sem].notaSum+=r.nota;if(r._dt)bwk[r.sem].datas.push(new Date(r._dt));
           if(isA)bwk[r.sem].aceitas++;else if(isN)bwk[r.sem].nao_aceita++;
         }
         if(r.dor&&r.dor!=='nan'&&r.mes){var kk=r.mes+'|||'+r.dor;if(!dbm[kk])dbm[kk]={key:r.mes,dor:r.dor,total:0,notaSum:0,aceitas:0};dbm[kk].total++;dbm[kk].notaSum+=r.nota;if(isA)dbm[kk].aceitas++;}
