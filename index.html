@@ -283,7 +283,7 @@ tr:nth-child(even) td{background:#FAFBFD}
         </div>
       </div>
       <div style="overflow-x:auto">
-        <table><thead><tr><th>#</th><th>ID HugMe</th><th>Data</th><th>Intervenção</th><th>Dores Enjoei — Novas</th><th>Moderação Solicitada?</th></tr></thead>
+        <table><thead><tr><th>#</th><th>ID HugMe</th><th>Data</th><th>Intervenção</th><th>Dores Enjoei — Novas</th><th>Prob. Aceitação</th><th>Moderação Solicitada?</th></tr></thead>
         <tbody id="dr-tb"></tbody></table>
       </div>
     </div>
@@ -325,6 +325,7 @@ var DBM=[{k:'2026-06',d:'ocorrências no fluxo de envio e devolução - perda ro
 var MOT=[{key:'2025-10',label:'Out/25',motivo:'Este é um caso de fraude',count:18},{key:'2025-10',label:'Out/25',motivo:'A empresa não violou o direito do consumidor',count:69},{key:'2025-10',label:'Out/25',motivo:'Reclamação em Duplicidade',count:6},{key:'2025-10',label:'Out/25',motivo:'A reclamação de outra empresa',count:3},{key:'2025-11',label:'Nov/25',motivo:'A empresa não violou o direito do consumidor',count:112},{key:'2025-11',label:'Nov/25',motivo:'Este é um caso de fraude',count:45},{key:'2025-11',label:'Nov/25',motivo:'Reclamação em Duplicidade',count:13},{key:'2025-11',label:'Nov/25',motivo:'A reclamação de outra empresa',count:3},{key:'2025-12',label:'Dez/25',motivo:'A empresa não violou o direito do consumidor',count:98},{key:'2025-12',label:'Dez/25',motivo:'Reclamação em Duplicidade',count:10},{key:'2025-12',label:'Dez/25',motivo:'Este é um caso de fraude',count:50},{key:'2025-12',label:'Dez/25',motivo:'A reclamação de outra empresa',count:3},{key:'2026-01',label:'Jan/26',motivo:'Este é um caso de fraude',count:46},{key:'2026-01',label:'Jan/26',motivo:'A empresa não violou o direito do consumidor',count:118},{key:'2026-01',label:'Jan/26',motivo:'Reclamação em Duplicidade',count:19},{key:'2026-02',label:'Fev/26',motivo:'A empresa não violou o direito do consumidor',count:126},{key:'2026-02',label:'Fev/26',motivo:'Este é um caso de fraude',count:39},{key:'2026-02',label:'Fev/26',motivo:'Reclamação em Duplicidade',count:17},{key:'2026-02',label:'Fev/26',motivo:'A reclamação de outra empresa',count:1},{key:'2026-02',label:'Fev/26',motivo:'Reclamação de Terceiros',count:1},{key:'2026-03',label:'Mar/26',motivo:'A empresa não violou o direito do consumidor',count:112},{key:'2026-03',label:'Mar/26',motivo:'Este é um caso de fraude',count:48},{key:'2026-03',label:'Mar/26',motivo:'Reclamação em Duplicidade',count:35},{key:'2026-03',label:'Mar/26',motivo:'Reclamação de Terceiros',count:1},{key:'2026-03',label:'Mar/26',motivo:'A reclamação de outra empresa',count:2},{key:'2026-04',label:'Abr/26',motivo:'Reclamação em Duplicidade',count:38},{key:'2026-04',label:'Abr/26',motivo:'A reclamação de outra empresa',count:3},{key:'2026-04',label:'Abr/26',motivo:'A empresa não violou o direito do consumidor',count:147},{key:'2026-04',label:'Abr/26',motivo:'Este é um caso de fraude',count:35},{key:'2026-05',label:'Mai/26',motivo:'A empresa não violou o direito do consumidor',count:45},{key:'2026-05',label:'Mai/26',motivo:'A reclamação de outra empresa',count:2},{key:'2026-05',label:'Mai/26',motivo:'Reclamação em Duplicidade',count:19},{key:'2026-05',label:'Mai/26',motivo:'Este é um caso de fraude',count:14},{key:'2026-06',label:'Jun/26',motivo:'Este é um caso de fraude',count:2},{key:'2026-06',label:'Jun/26',motivo:'A empresa não violou o direito do consumidor',count:2}];
 var NAO_SOL=[{key:'2025-10',label:'Out/25',total:439,diretriz:430,chatbot:6,erro:0,incidente:3},{key:'2025-11',label:'Nov/25',total:662,diretriz:653,chatbot:9,erro:0,incidente:0},{key:'2025-12',label:'Dez/25',total:585,diretriz:569,chatbot:12,erro:1,incidente:3},{key:'2026-01',label:'Jan/26',total:713,diretriz:688,chatbot:20,erro:3,incidente:2},{key:'2026-02',label:'Fev/26',total:644,diretriz:552,chatbot:72,erro:17,incidente:3},{key:'2026-03',label:'Mar/26',total:793,diretriz:457,chatbot:291,erro:40,incidente:5},{key:'2026-04',label:'Abr/26',total:735,diretriz:426,chatbot:297,erro:9,incidente:3},{key:'2026-05',label:'Mai/26',total:188,diretriz:124,chatbot:61,erro:3,incidente:0},{key:'2026-06',label:'Jun/26',total:4,diretriz:2,chatbot:2,erro:0,incidente:0}];
 var DR_RESP=[{key:'2025-10',label:'Out/25',pub:512,priv:32,total:544},{key:'2025-11',label:'Nov/25',pub:792,priv:51,total:843},{key:'2025-12',label:'Dez/25',pub:740,priv:42,total:782},{key:'2026-01',label:'Jan/26',pub:882,priv:46,total:928},{key:'2026-02',label:'Fev/26',pub:862,priv:39,total:901},{key:'2026-03',label:'Mar/26',pub:885,priv:40,total:925},{key:'2026-04',label:'Abr/26',pub:820,priv:58,total:878},{key:'2026-05',label:'Mai/26',pub:244,priv:21,total:265},{key:'2026-06',label:'Jun/26',pub:21,priv:0,total:21}];
+// DR_RESP é recalculado no upload via doUpload → drMap
 
 var DIR_DATA=[{i:'99532316',dt:'10/06/2026',ms:'2026-06',iv:'Não',dr:'ocorrências no fluxo de envio e devolução - perda roubo ou apreensão do produto  - produto extraviado, perdido ou roubado'},{i:'99520807',dt:'09/06/2026',ms:'2026-06',iv:'Não',dr:'ocorrências no fluxo de envio e devolução - impossibilidade ou atraso na entrega do produto - produto fora do prazo de entrega'},{i:'99520620',dt:'09/06/2026',ms:'2026-06',iv:'Não',dr:'ocorrências no fluxo de envio e devolução - rastreamento - rastreio sem atualização'},{i:'99490148',dt:'09/06/2026',ms:'2026-06',iv:'moderação por duplicidade',dr:'ocorrências no fluxo de envio e devolução - perda roubo ou apreensão do produto  - produto extraviado, perdido ou roubado'},{i:'99480219',dt:'08/06/2026',ms:'2026-06',iv:'Não',dr:'ocorrências no fluxo de envio e devolução - perda roubo ou apreensão do produto  - produto extraviado, perdido ou roubado'},{i:'99425441',dt:'06/06/2026',ms:'2026-06',iv:'Não',dr:'ocorrências no fluxo de envio e devolução - perda roubo ou apreensão do produto  - produto extraviado, perdido ou roubado'},{i:'99396110',dt:'05/06/2026',ms:'2026-06',iv:'Não',dr:'ocorrências no fluxo de envio e devolução - perda roubo ou apreensão do produto  - produto extraviado, perdido ou roubado'},{i:'99351447',dt:'03/06/2026',ms:'2026-06',iv:'Não',dr:'ocorrências no fluxo de envio e devolução - perda roubo ou apreensão do produto  - produto extraviado, perdido ou roubado'},{i:'99343240',dt:'03/06/2026',ms:'2026-06',iv:'Não',dr:'ocorrências no fluxo de envio e devolução - perda roubo ou apreensão do produto  - produto extraviado, perdido ou roubado'},{i:'99341586',dt:'03/06/2026',ms:'2026-06',iv:'Não',dr:'ocorrências no fluxo de envio e devolução - perda roubo ou apreensão do produto  - produto extraviado, perdido ou roubado'},{i:'99323403',dt:'03/06/2026',ms:'2026-06',iv:'Não',dr:'ocorrências no fluxo de envio e devolução - perda roubo ou apreensão do produto  - produto extraviado, perdido ou roubado'},{i:'99259475',dt:'01/06/2026',ms:'2026-06',iv:'não foi possível responder réplica',dr:'dúvidas sobre pagamentos e reembolsos - comissão e tarifas - dúvida sobre taxas e comissionamento'},{i:'99247986',dt:'01/06/2026',ms:'2026-06',iv:'Não',dr:'ocorrências no fluxo de envio e devolução - rastreamento - erro na atualização do rastreio'},{i:'99166914',dt:'29/05/2026',ms:'2026-05',iv:'Não',dr:'ocorrências no fluxo de envio e devolução - impossibilidade ou atraso na entrega do produto - produto fora do prazo de entrega'},{i:'99156436',dt:'29/05/2026',ms:'2026-05',iv:'Não',dr:'ocorrências no fluxo de envio e devolução - perda roubo ou apreensão do produto  - produto extraviado, perdido ou roubado'},{i:'98750836',dt:'18/05/2026',ms:'2026-05',iv:'não foi possível responder réplica',dr:'ocorrências no fluxo de envio e devolução - perda roubo ou apreensão do produto  - produto extraviado, perdido ou roubado'},{i:'98708658',dt:'15/05/2026',ms:'2026-05',iv:'não foi possível responder réplica',dr:'ocorrências no fluxo de envio e devolução - perda roubo ou apreensão do produto  - produto extraviado, perdido ou roubado'},{i:'98695279',dt:'15/05/2026',ms:'2026-05',iv:'não foi possível responder réplica',dr:'ocorrências antes do envio  - solicitação de cancelamento antes do prazo - vendedor sumiu'},{i:'98694573',dt:'15/05/2026',ms:'2026-05',iv:'não foi possível responder réplica',dr:'dúvidas ou falhas do enjoei pro - desistência ou peças reprovadas - solicitação de retirada de lote'},{i:'98691024',dt:'15/05/2026',ms:'2026-05',iv:'não foi possível responder réplica',dr:'ocorrências antes do envio  - prazo de envio ou devolução expirado - devolução fora do prazo'},{i:'98657244',dt:'14/05/2026',ms:'2026-05',iv:'não foi possível responder réplica',dr:'ocorrências no fluxo de envio e devolução - perda roubo ou apreensão do produto  - produto extraviado, perdido ou roubado'},{i:'98655085',dt:'14/05/2026',ms:'2026-05',iv:'Não',dr:'ocorrências no fluxo de envio e devolução - impossibilidade ou atraso na entrega do produto - produto fora do prazo de entrega'},{i:'98650783',dt:'14/05/2026',ms:'2026-05',iv:'não foi possível responder réplica',dr:'ocorrências antes do envio  - troca de transportadora - outros motivos - exceção'},{i:'98638343',dt:'14/05/2026',ms:'2026-05',iv:'Não',dr:'segurança da plataforma - usuário restrito'},{i:'98634501',dt:'14/05/2026',ms:'2026-05',iv:'Não',dr:'dúvidas sobre pagamentos e reembolsos - prazo de pagamento e reembolso - dúvida sobre o prazo de pagamento'},{i:'98622233',dt:'13/05/2026',ms:'2026-05',iv:'Não',dr:'problemas com o produto recebido - caixa vazia'},{i:'98618915',dt:'13/05/2026',ms:'2026-05',iv:'moderação por duplicidade',dr:'ocorrências antes do envio  - troca de transportadora - outros motivos - exceção'},{i:'98598343',dt:'13/05/2026',ms:'2026-05',iv:'Não',dr:'problemas com o produto recebido - troca de etiqueta'},{i:'98591911',dt:'12/05/2026',ms:'2026-05',iv:'Não',dr:'ocorrências no fluxo de envio e devolução - impossibilidade ou atraso na entrega do produto - produto retornou ao remetente'},{i:'98588260',dt:'12/05/2026',ms:'2026-05',iv:'não foi possível responder réplica',dr:'ocorrências no fluxo de envio e devolução - rastreamento - não consta a postagem'},{i:'98586954',dt:'12/05/2026',ms:'2026-05',iv:'não foi possível responder réplica',dr:'problemas com o produto recebido - produto diferente do anunciado'},{i:'98585946',dt:'12/05/2026',ms:'2026-05',iv:'não foi possível responder réplica',dr:'ocorrências no fluxo de envio e devolução - rastreamento - rastreio sem atualização'},{i:'98583791',dt:'12/05/2026',ms:'2026-05',iv:'Não',dr:'ocorrências no fluxo de envio e devolução - produto devolvido, mas vendedor pago'},{i:'98579711',dt:'12/05/2026',ms:'2026-05',iv:'não foi possível responder réplica',dr:'ocorrências antes do envio  - problemas no ponto de postagem'},{i:'98571874',dt:'12/05/2026',ms:'2026-05',iv:'não foi possível responder réplica',dr:'ocorrências no fluxo de envio e devolução - perda roubo ou apreensão do produto  - produto extraviado, perdido ou roubado'},{i:'98571164',dt:'12/05/2026',ms:'2026-05',iv:'não foi possível responder réplica',dr:'ocorrências no fluxo de envio e devolução - perda roubo ou apreensão do produto  - produto extraviado, perdido ou roubado'},{i:'98564566',dt:'12/05/2026',ms:'2026-05',iv:'Não',dr:'segurança da plataforma - cobrança de taxa por fora'},{i:'98553217',dt:'12/05/2026',ms:'2026-05',iv:'Não',dr:'ocorrências no fluxo de envio e devolução - perda roubo ou apreensão do produto  - produto extraviado, perdido ou roubado'},{i:'98547179',dt:'11/05/2026',ms:'2026-05',iv:'Não',dr:'dúvidas sobre pagamentos e reembolsos - saque não concluído - status de saque desatualizado'},{i:'98518875',dt:'11/05/2026',ms:'2026-05',iv:'moderação por duplicidade',dr:'ocorrências no fluxo de envio e devolução - perda roubo ou apreensão do produto  - produto extraviado, perdido ou roubado'},{i:'98480552',dt:'09/05/2026',ms:'2026-05',iv:'moderação por duplicidade',dr:'ocorrências no fluxo de envio e devolução - impossibilidade ou atraso na entrega do produto - produto retornou ao remetente'},{i:'98466929',dt:'09/05/2026',ms:'2026-05',iv:'não foi possível responder réplica',dr:'usabilidade da plataforma - gerenciamento da loja - comentário reprovado'},{i:'98443632',dt:'08/05/2026',ms:'2026-05',iv:'não foi possível responder réplica',dr:'ocorrências no fluxo de envio e devolução - perda roubo ou apreensão do produto  - produto extraviado, perdido ou roubado'},{i:'98433260',dt:'08/05/2026',ms:'2026-05',iv:'Não',dr:'incidentes - erro no reembolso'},{i:'98432164',dt:'08/05/2026',ms:'2026-05',iv:'Não',dr:'ocorrências antes do envio  - solicitação de cancelamento antes do prazo - comprador arrependido'},{i:'98354838',dt:'06/05/2026',ms:'2026-05',iv:'não foi possível responder réplica',dr:'dúvidas sobre pagamentos e reembolsos - compra não concluída - compra no prazo de análise'},{i:'98345880',dt:'05/05/2026',ms:'2026-05',iv:'não foi possível responder réplica',dr:'ocorrências no fluxo de envio e devolução - perda roubo ou apreensão do produto  - produto extraviado, perdido ou roubado'},{i:'98295297',dt:'04/05/2026',ms:'2026-05',iv:'não foi possível responder réplica',dr:'ocorrências no fluxo de envio e devolução - perda roubo ou apreensão do produto  - produto extraviado, perdido ou roubado'},{i:'97847474',dt:'22/04/2026',ms:'2026-04',iv:'não foi possível responder réplica',dr:'dúvidas ou falhas do enjoei pro - desistência ou peças reprovadas - não localiza boleto de pagamento'},{i:'97839088',dt:'22/04/2026',ms:'2026-04',iv:'não foi possível responder réplica',dr:'problemas com o produto recebido - produto avariado'},{i:'97717082',dt:'17/04/2026',ms:'2026-04',iv:'não foi possível responder réplica',dr:'ocorrências no fluxo de envio e devolução - consta como entregue mas não recebi'},{i:'97673652',dt:'16/04/2026',ms:'2026-04',iv:'não foi possível responder réplica',dr:'ocorrências antes do envio  - troca de transportadora - outros motivos - exceção'},{i:'97654332',dt:'16/04/2026',ms:'2026-04',iv:'não foi possível responder réplica',dr:'ocorrências antes do envio  - solicitação de cancelamento antes do prazo - comprador arrependido'},{i:'97334248',dt:'07/04/2026',ms:'2026-04',iv:'não foi possível responder réplica',dr:'dúvidas sobre pagamentos e reembolsos - compra não concluída - compra no prazo de análise'},{i:'97267436',dt:'05/04/2026',ms:'2026-04',iv:'Não',dr:'ocorrências no fluxo de envio e devolução - perda roubo ou apreensão do produto  - produto extraviado, perdido ou roubado'},{i:'96743820',dt:'21/03/2026',ms:'2026-03',iv:'Não',dr:'ocorrências no fluxo de envio e devolução - pedido cancelado, mas produto enviado'},{i:'96265239',dt:'07/03/2026',ms:'2026-03',iv:'não foi possível responder réplica',dr:'dúvidas sobre pagamentos e reembolsos - dúvidas sobre reembolso - dúvida sobre como solicitar e acompanhar o reembolso'},{i:'96214828',dt:'06/03/2026',ms:'2026-03',iv:'Não',dr:'ocorrências no fluxo de envio e devolução - impossibilidade ou atraso na entrega do produto - produto retornou ao remetente'},{i:'96139059',dt:'04/03/2026',ms:'2026-03',iv:'não foi possível responder réplica',dr:'dúvidas sobre pagamentos e reembolsos - dúvidas sobre reembolso - dúvida sobre como solicitar e acompanhar o reembolso'},{i:'94447066',dt:'20/01/2026',ms:'2026-01',iv:'não foi possível responder réplica',dr:'usabilidade da plataforma - gerenciamento da loja - personalização e avaliação da loja'},{i:'91546174',dt:'03/11/2025',ms:'2025-11',iv:'Não',dr:'usabilidade da plataforma - gerenciamento da loja - personalização e avaliação da loja'},{i:'91139682',dt:'21/10/2025',ms:'2025-10',iv:'Não',dr:'dúvidas sobre pagamentos e reembolsos - comissão e tarifas - dúvida sobre taxas e comissionamento'}];
 var periodoView='mes';
@@ -363,12 +364,12 @@ window.addEventListener('DOMContentLoaded',function(){
 function getPayload(){
   var dbmMin=DBM.map(function(d){var m=d.notaSum?+(d.notaSum/d.total).toFixed(2):(d.media||0);return{k:d.key,d:d.dor,t:d.total,m:m,a:d.aceitas};});
   var dirMin=DIR_DATA.map(function(r){return{i:r.id,dt:r.data,ms:r.mes,iv:r.iv,dr:r.dor};});
-  return{T:BTOTAL,A:BACEITA,N:BNACEITA,P:BPEND,ME:BMEDIA,BMS:BMS,BWK:BWK,MOT:MOT,DBM:dbmMin,TOP:TOP15,DIR:dirMin,NAO:NAO_SOL,ts:new Date().toISOString()};
+  return{T:BTOTAL,A:BACEITA,N:BNACEITA,P:BPEND,ME:BMEDIA,BMS:BMS,BWK:BWK,MOT:MOT,DBM:dbmMin,TOP:TOP15,DIR:dirMin,NAO:NAO_SOL,DRR:DR_RESP,ts:new Date().toISOString()};
 }
 function applyPayload(d){
   if(!d)return;
   BTOTAL=d.T||BTOTAL;BACEITA=d.A||BACEITA;BNACEITA=d.N||BNACEITA;BPEND=d.P||BPEND;BMEDIA=d.ME||BMEDIA;
-  if(d.BMS)BMS=d.BMS;if(d.BWK)BWK=d.BWK;if(d.MOT)MOT=d.MOT;if(d.TOP)TOP15=d.TOP;if(d.NAO)NAO_SOL=d.NAO;
+  if(d.BMS)BMS=d.BMS;if(d.BWK)BWK=d.BWK;if(d.MOT)MOT=d.MOT;if(d.TOP)TOP15=d.TOP;if(d.NAO)NAO_SOL=d.NAO;if(d.DRR)DR_RESP=d.DRR;
   if(d.DBM)DBM=d.DBM.map(function(r){return{key:r.k||r.key,dor:r.d||r.dor,total:r.t||r.total,notaSum:+((r.m||0)*(r.t||r.total||0)).toFixed(1),aceitas:r.a||r.aceitas||0};});
   if(d.DIR)DIR_DATA=d.DIR.map(function(r){return{id:r.i||r.id,data:r.dt||r.data,mes:r.ms||r.mes,iv:r.iv,dor:r.dr||r.dor||''};});
   var ok=document.getElementById('uok');
@@ -653,16 +654,92 @@ function rDiaria(){
   var pnd=allIds.length-sim-nao;
   st('dr-cnt',data.length);st('dr-sim',sim);st('dr-nao',nao);st('dr-pnd',pnd);
   si('dr-mk',[{l:'Exibindo',v:data.length,c:CC.p},{l:'Sim',v:sim,c:CC.a},{l:'Não',v:nao,c:CC.r},{l:'Pendente',v:pnd,c:CC.w}].map(function(k){return'<div class="mkpi"><div class="mkpi-v" style="color:'+k.c+'">'+k.v+'</div><div class="mkpi-l">'+k.l+'</div></div>';}).join(''));
-  if(!data.length){si('dr-tb','<tr><td colspan="6" style="padding:32px;text-align:center;color:#94A3B8">Nenhum registro encontrado</td></tr>');return;}
+  // Mapa de moderabilidade baseado no excel temas_moderaveis_enjoei + manual RA
+  // Lógica: verifica keywords da dor para classificar em SIM / DEPENDE / NAO
+  function probDor(dor){
+    var d=(dor||'').toLowerCase();
+    // SIM - Alta probabilidade (dores previstas nos Termos de Uso, sem prejuízo objetivo)
+    var sim=[
+      'usuário restrito','phishing','conduta do usuário','cobrança de taxa por fora',
+      'tarifa de inatividade','tarifa de saque','comissão e tarifas',
+      'compra no prazo de análise','devolução fora do prazo',
+      'prazo de pagamento e reembolso','saque não concluído',
+      'peso e dimensões divergentes','troca de transportadora',
+      'problemas no ponto de postagem','compra fora do prazo de análise',
+      'compra recusada e não reembolsada','dúvidas sobre o enjubank',
+      'não possui conta bancária','dados bancários incorretos',
+      'status de saque desatualizado'
+    ];
+    // DEPENDE - Chance média (ressalvas, depende da resposta pública)
+    var dep=[
+      'comentário reprovado','anúncio reprovado','desativação e reativação',
+      'personalização e avaliação da loja','vendedor sumiu',
+      'vendedor deseja cancelar','forma de pagamento indisponível',
+      'forma de pagamento incorreta','dúvidas sobre facilidades ou promoções',
+      'dúvidas gerais','exclusão da conta','alteração de dados cadastrais',
+      'marcas de uso','vício oculto','produto falso','apreendido pela receita',
+      'atraso na coleta','coleta extraviada','solicitação de retirada de lote',
+      'não localiza boleto','pedido cancelado, mas produto enviado',
+      'produto devolvido ao vendedor','devolução fora do sistema',
+      'dúvida sobre o funcionamento','dúvida sobre o processo de coleta'
+    ];
+    // NAO - Baixa/sem chance (prejuízo objetivo, falha operacional clara)
+    var nao=[
+      'produto extraviado','produto perdido','produto roubado',
+      'rastreio sem atualização','rastreamento - não consta','rastreamento - erro',
+      'rastreamento - usuário não localizou','dúvidas sobre rastreio dentro do prazo',
+      'consta como entregue mas não recebi','produto retornou ao remetente',
+      'fora do prazo de entrega','produto fora do prazo',
+      'produto diferente do anunciado','produto avariado','caixa vazia',
+      'sacolinha com item faltante','acessório faltante','troca de etiqueta',
+      'cep ou endereço incorreto','endereço incorreto',
+      'produto não postado consta como enviado',
+      'produto aguardando retirada em agência',
+      'confirmação de entrega em mãos',
+      'produto devolvido, mas vendedor pago',
+      'comprador arrependido','produto indisponível',
+      'incidentes - erro no reembolso','incidentes - pagamento não processado',
+      'incidentes - erro de processamento','incidentes - cupom',
+      'incidentes - erro para inativar','incidentes - produto não postado',
+      'atraso para gerar qr code','etiqueta não localizada',
+      'atraso no envio do produto','atraso no envio das peças',
+      'não localiza boleto de pagamento'
+    ];
+    for(var i=0;i<nao.length;i++){if(d.indexOf(nao[i])>=0)return 'NAO';}
+    for(var i=0;i<sim.length;i++){if(d.indexOf(sim[i])>=0)return 'SIM';}
+    for(var i=0;i<dep.length;i++){if(d.indexOf(dep[i])>=0)return 'DEPENDE';}
+    return null;
+  }
+  if(!data.length){si('dr-tb','<tr><td colspan="7" style="padding:32px;text-align:center;color:#94A3B8">Nenhum registro encontrado</td></tr>');return;}
   si('dr-tb',data.map(function(r,i){
     var mk=marks[r.id]||'Pendente';
     var bg=mk==='Sim'?'#F0FBF4':mk==='Não'?'#FFF3EE':(i%2?'#FAFBFD':'#fff');
+    // probabilidade de aceitação baseada no manual + excel de temas moderáveis
+    var ivLow=(r.iv||'').toLowerCase().trim();
+    var isDup=ivLow==='moderação por duplicidade';
+    var probHtml='';
+    if(isDup){
+      probHtml='<span title="Moderação por duplicidade — aceite garantido" style="background:#F0FBF4;color:#08B25C;border:1.5px solid #08B25C44;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:800;white-space:nowrap">✅ Alta</span>';
+    } else {
+      var dorKey=(r.dor||r.dr||'');
+      var res=probDor(dorKey);
+      if(res==='SIM'){
+        probHtml='<span title="Dor com alta probabilidade de aceite conforme manual RA e temas moderáveis" style="background:#F0FBF4;color:#08B25C;border:1.5px solid #08B25C44;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:800;white-space:nowrap">✅ Alta</span>';
+      } else if(res==='DEPENDE'){
+        probHtml='<span title="Moderação possível mas depende da resposta pública — verificar pontos de atenção" style="background:#FEF9EC;color:#B45309;border:1.5px solid #B4530944;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:800;white-space:nowrap">⚠️ Depende</span>';
+      } else if(res==='NAO'){
+        probHtml='<span title="Dor com prejuízo objetivo ao cliente — não moderável conforme manual RA" style="background:#FFF3EE;color:#FA4C04;border:1.5px solid #FA4C0444;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:800;white-space:nowrap">❌ Baixa</span>';
+      } else {
+        probHtml='<span style="color:#94A3B8;font-size:11px" title="Dor não mapeada nos temas moderáveis">—</span>';
+      }
+    }
     return'<tr style="border-bottom:1px solid #E2E8F0;background:'+bg+';transition:background .2s">'
       +'<td class="cm" style="font-size:12px">'+(i+1)+'</td>'
       +'<td class="fw7" style="font-family:monospace;font-size:13px">'+r.id+'</td>'
       +'<td class="cm" style="white-space:nowrap">'+r.data+'</td>'
       +'<td style="font-size:12px">'+r.iv+'</td>'
       +'<td class="cm" style="font-size:12px;max-width:280px;line-height:1.4">'+r.dor+'</td>'
+      +'<td style="white-space:nowrap;padding:8px 14px">'+probHtml+'</td>'
       +'<td><div style="display:flex;gap:6px;align-items:center">'
       +'<button onclick="saveM(\''+r.id+'\',\'Sim\')" style="padding:5px 14px;border-radius:20px;border:2px solid '+(mk==='Sim'?'#08B25C':'#E2E8F0')+';background:'+(mk==='Sim'?'#08B25C':'#fff')+';color:'+(mk==='Sim'?'#fff':'#94A3B8')+';font-weight:700;font-size:12px;cursor:pointer">✓ Sim</button>'
       +'<button onclick="saveM(\''+r.id+'\',\'Não\')" style="padding:5px 14px;border-radius:20px;border:2px solid '+(mk==='Não'?'#FA4C04':'#E2E8F0')+';background:'+(mk==='Não'?'#FA4C04':'#fff')+';color:'+(mk==='Não'?'#fff':'#94A3B8')+';font-weight:700;font-size:12px;cursor:pointer">✗ Não</button>'
@@ -701,7 +778,7 @@ function doUpload(inp){
           var wNum=Math.ceil((thu-sw4)/604800000);
           sem=isoY+'-W'+('0'+wNum).slice(-2);
         }
-        return{id:String(col(r,'id hugme')||col(r,'id')||''),nota:parseFloat(col(r,'nota'))||0,dor:String(col(r,'dores enjoei')||col(r,'dores')||'').trim(),iv:String(col(r,'intervenção')||col(r,'intervencao')||'').trim(),ms:String(col(r,'moderação status')||col(r,'moderacao status')||'').trim(),mm:String(col(r,'moderação motivo')||col(r,'moderacao motivo')||'').trim(),dr:String(col(r,'diretriz de resposta')||col(r,'diretriz')||'').trim(),mes:mes,sem:sem,fdata:fdata,_dt:dt};
+        return{id:String(col(r,'id hugme')||col(r,'id')||''),nota:parseFloat(col(r,'nota'))||0,dor:String(col(r,'dores enjoei')||col(r,'dores')||'').trim(),iv:String(col(r,'intervenção')||col(r,'intervencao')||'').trim(),ms:String(col(r,'moderação status')||col(r,'moderacao status')||'').trim(),mm:String(col(r,'moderação motivo')||col(r,'moderacao motivo')||'').trim(),dr:String(col(r,'diretriz de resposta enjoei')||col(r,'diretriz de resposta')||col(r,'diretriz')||'').trim(),mes:mes,sem:sem,fdata:fdata,_dt:dt};
       }).filter(function(r){return r.nota>=0&&r.nota<=5;});
       if(!parsed.length){document.getElementById('ovl').classList.remove('on');toast('⚠️ Nenhum dado válido.');return;}
       var acc=0,nacc=0,pnd=0,notaSum=0;
