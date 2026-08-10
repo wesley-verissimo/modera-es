@@ -362,15 +362,25 @@ window.addEventListener('DOMContentLoaded',function(){
 
 /* CLOUD */
 function getPayload(){
-  var dbmMin=DBM.map(function(d){var m=d.notaSum?+(d.notaSum/d.total).toFixed(2):(d.media||0);return{k:d.key,d:d.dor,t:d.total,m:m,a:d.aceitas};});
+  // comprime DBM: extrai dicionário de dores para reduzir tamanho (DBM sozinho ~83KB sem isso)
+  var DORS=[];var dorIdx={};
+  DBM.forEach(function(d){if(!(d.dor in dorIdx)){dorIdx[d.dor]=DORS.length;DORS.push(d.dor);}});
+  var dbmMin=DBM.map(function(d){var m=d.notaSum?+(d.notaSum/d.total).toFixed(2):(d.media||0);return{k:d.key,di:dorIdx[d.dor],t:d.total,m:m,a:d.aceitas};});
   var dirMin=DIR_DATA.map(function(r){return{i:r.id,dt:r.data,ms:r.mes,iv:r.iv,dr:r.dor};});
-  return{T:BTOTAL,A:BACEITA,N:BNACEITA,P:BPEND,ME:BMEDIA,BMS:BMS,BWK:BWK,MOT:MOT,DBM:dbmMin,TOP:TOP15,DIR:dirMin,NAO:NAO_SOL,DRR:DR_RESP,ts:new Date().toISOString()};
+  return{T:BTOTAL,A:BACEITA,N:BNACEITA,P:BPEND,ME:BMEDIA,BMS:BMS,BWK:BWK,MOT:MOT,DBM:dbmMin,DORS:DORS,TOP:TOP15,DIR:dirMin,NAO:NAO_SOL,DRR:DR_RESP,ts:new Date().toISOString()};
 }
 function applyPayload(d){
   if(!d)return;
   BTOTAL=d.T||BTOTAL;BACEITA=d.A||BACEITA;BNACEITA=d.N||BNACEITA;BPEND=d.P||BPEND;BMEDIA=d.ME||BMEDIA;
   if(d.BMS)BMS=d.BMS;if(d.BWK)BWK=d.BWK;if(d.MOT)MOT=d.MOT;if(d.TOP)TOP15=d.TOP;if(d.NAO)NAO_SOL=d.NAO;if(d.DRR)DR_RESP=d.DRR;
-  if(d.DBM)DBM=d.DBM.map(function(r){return{key:r.k||r.key,dor:r.d||r.dor,total:r.t||r.total,notaSum:+((r.m||0)*(r.t||r.total||0)).toFixed(1),aceitas:r.a||r.aceitas||0};});
+  if(d.DBM){
+    var dors=d.DORS||[];
+    DBM=d.DBM.map(function(r){
+      // suporta formato antigo (d=string) e novo (di=índice)
+      var dor=('di' in r)?( dors[r.di]||'' ):(r.d||r.dor||'');
+      return{key:r.k||r.key,dor:dor,total:r.t||r.total,notaSum:+((r.m||0)*(r.t||r.total||0)).toFixed(1),aceitas:r.a||r.aceitas||0};
+    });
+  }
   if(d.DIR)DIR_DATA=d.DIR.map(function(r){return{id:r.i||r.id,data:r.dt||r.data,mes:r.ms||r.mes,iv:r.iv,dor:r.dr||r.dor||''};});
   var ok=document.getElementById('uok');
   if(ok&&(d.ts||d.savedAt)){var dt=new Date(d.ts||d.savedAt);ok.textContent='✓ Base de '+('0'+dt.getDate()).slice(-2)+'/'+('0'+(dt.getMonth()+1)).slice(-2)+'/'+dt.getFullYear()+' ('+fmt(BTOTAL)+' reg.)';ok.style.display='block';}
