@@ -280,6 +280,7 @@ tr:nth-child(even) td{background:#FAFBFD}
           <div style="background:#F0FBF4;border:1px solid #08B25C33;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;color:#08B25C">✅ Sim: <span id="dr-sim" style="font-size:18px;font-weight:800">0</span></div>
           <div style="background:#FFF3EE;border:1px solid #FA4C0433;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;color:#FA4C04">❌ Não: <span id="dr-nao" style="font-size:18px;font-weight:800">0</span></div>
           <div style="background:#F5F0FF;border:1px solid #44004133;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;color:#440041">⏳ Pendente: <span id="dr-pnd" style="font-size:18px;font-weight:800">0</span></div>
+        <div style="background:#FAF5FF;border:1px solid #6B21A833;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;color:#6B21A8">⊘ Recusada: <span id="dr-rec" style="font-size:18px;font-weight:800">0</span></div>
         </div>
       </div>
       <div style="overflow-x:auto">
@@ -446,7 +447,8 @@ function fecharDia(){
   var allIds=DIR_DATA.map(function(d){return d.id;});
   var sim=allIds.filter(function(id){return marks[id]==='Sim';}).length;
   var nao=allIds.filter(function(id){return marks[id]==='Não';}).length;
-  var pnd=allIds.length-sim-nao;
+  var rec=allIds.filter(function(id){return marks[id]==='Recusada';}).length;
+  var pnd=allIds.length-sim-nao-rec;
   var hoje=new Date();
   var dataStr=('0'+hoje.getDate()).slice(-2)+'/'+('0'+(hoje.getMonth()+1)).slice(-2)+'/'+hoje.getFullYear();
   var dataKey=hoje.getFullYear()+'-'+('0'+(hoje.getMonth()+1)).slice(-2)+'-'+('0'+hoje.getDate()).slice(-2);
@@ -455,7 +457,7 @@ function fecharDia(){
     if(!confirm('Já existe registro para hoje ('+dataStr+'). Substituir?'))return;
     historicoLocal.splice(jaExiste,1);
   }
-  var reg={dataKey:dataKey,data:dataStr,total:allIds.length,sim:sim,nao:nao,pendente:pnd,pct:allIds.length?+(sim/allIds.length*100).toFixed(1):0};
+  var reg={dataKey:dataKey,data:dataStr,total:allIds.length,sim:sim,nao:nao,rec:rec,pendente:pnd,pct:allIds.length?+(sim/allIds.length*100).toFixed(1):0};
   historicoLocal.unshift(reg);
   saveHistorico(function(ok){
     toast(ok?'✅ Dia '+dataStr+' fechado para todos!':'✅ Dia fechado localmente.');
@@ -471,15 +473,17 @@ function rHistorico(){
   var h=historicoLocal;
   var tSim=h.reduce(function(a,d){return a+d.sim;},0);
   var tNao=h.reduce(function(a,d){return a+d.nao;},0);
+  var tRec=h.reduce(function(a,d){return a+(d.rec||0);},0);
   var media=h.length?+(tSim/h.length).toFixed(1):0;
   si('h-pills',[
     {l:'Dias registrados',v:h.length,c:CC.p,bg:'#F5F0FF',s:'histórico acumulado'},
     {l:'Total Sim (acumulado)',v:fmt(tSim),c:CC.a,bg:'#F0FBF4',s:'moderações solicitadas'},
     {l:'Total Não (acumulado)',v:fmt(tNao),c:CC.r,bg:'#FFF3EE',s:'não solicitadas'},
+    {l:'Total Recusada (acumulado)',v:fmt(tRec),c:'#6B21A8',bg:'#FAF5FF',s:'moderações recusadas'},
     {l:'Média diária de Sim',v:media,c:CC.p,bg:'#F5F0FF',s:'por dia fechado'},
   ].map(function(p){return'<div class="pill" style="background:'+p.bg+';border-color:'+p.c+'33"><div class="pill-l">'+p.l+'</div><div class="pill-v" style="color:'+p.c+'">'+p.v+'</div><div class="pill-s">'+p.s+'</div></div>';}).join(''));
-  si('h-th',tr0(['Data','Total lista','✅ Sim','❌ Não','⏳ Pendente','% Realizado','']));
-  if(!h.length){si('h-tb','<tr><td colspan="7" style="padding:32px;text-align:center;color:#94A3B8">Nenhum dia fechado ainda. Clique em "Fechar dia de hoje" para registrar.</td></tr>');return;}
+  si('h-th',tr0(['Data','Total lista','✅ Sim','❌ Não','⊘ Recusada','⏳ Pendente','% Realizado','']));
+  if(!h.length){si('h-tb','<tr><td colspan="8" style="padding:32px;text-align:center;color:#94A3B8">Nenhum dia fechado ainda. Clique em "Fechar dia de hoje" para registrar.</td></tr>');return;}
   si('h-tb',h.map(function(d,i){
     var cor=d.pct>=80?CC.a:d.pct>=50?CC.w:CC.r;
     var bg=i%2?'#FAFBFD':'#fff';
@@ -488,6 +492,7 @@ function rHistorico(){
       +'<td class="cm">'+d.total+'</td>'
       +'<td style="color:'+CC.a+';font-weight:700">'+d.sim+'</td>'
       +'<td style="color:'+CC.r+';font-weight:700">'+d.nao+'</td>'
+      +'<td style="color:#6B21A8;font-weight:700">'+(d.rec||0)+'</td>'
       +'<td style="color:'+CC.p+';font-weight:700">'+d.pendente+'</td>'
       +'<td><span class="badge" style="background:'+cor+'22;color:'+cor+'">'+d.pct+'%</span></td>'
       +'<td><button onclick="excluirDia(\''+d.dataKey+'\')" style="border:none;background:transparent;color:#94A3B8;cursor:pointer;font-size:12px;padding:4px 8px;border-radius:6px" title="Excluir">🗑</button></td>'
@@ -661,9 +666,10 @@ function rDiaria(){
   var allIds=DIR_DATA.map(function(d){return d.id;});
   var sim=allIds.filter(function(id){return marks[id]==='Sim';}).length;
   var nao=allIds.filter(function(id){return marks[id]==='Não';}).length;
-  var pnd=allIds.length-sim-nao;
-  st('dr-cnt',data.length);st('dr-sim',sim);st('dr-nao',nao);st('dr-pnd',pnd);
-  si('dr-mk',[{l:'Exibindo',v:data.length,c:CC.p},{l:'Sim',v:sim,c:CC.a},{l:'Não',v:nao,c:CC.r},{l:'Pendente',v:pnd,c:CC.w}].map(function(k){return'<div class="mkpi"><div class="mkpi-v" style="color:'+k.c+'">'+k.v+'</div><div class="mkpi-l">'+k.l+'</div></div>';}).join(''));
+  var rec=allIds.filter(function(id){return marks[id]==='Recusada';}).length;
+  var pnd=allIds.length-sim-nao-rec;
+  st('dr-cnt',data.length);st('dr-sim',sim);st('dr-nao',nao);st('dr-pnd',pnd);st('dr-rec',rec);
+  si('dr-mk',[{l:'Exibindo',v:data.length,c:CC.p},{l:'Sim',v:sim,c:CC.a},{l:'Não',v:nao,c:CC.r},{l:'Pendente',v:pnd,c:CC.w},{l:'Recusada',v:rec,c:'#6B21A8'}].map(function(k){return'<div class="mkpi"><div class="mkpi-v" style="color:'+k.c+'">'+k.v+'</div><div class="mkpi-l">'+k.l+'</div></div>';}).join(''));
   // Mapa de moderabilidade baseado no excel temas_moderaveis_enjoei + manual RA
   // Lógica: verifica keywords da dor para classificar em SIM / DEPENDE / NAO
   function probDor(dor){
@@ -723,7 +729,7 @@ function rDiaria(){
   if(!data.length){si('dr-tb','<tr><td colspan="7" style="padding:32px;text-align:center;color:#94A3B8">Nenhum registro encontrado</td></tr>');return;}
   si('dr-tb',data.map(function(r,i){
     var mk=marks[r.id]||'Pendente';
-    var bg=mk==='Sim'?'#F0FBF4':mk==='Não'?'#FFF3EE':(i%2?'#FAFBFD':'#fff');
+    var bg=mk==='Sim'?'#F0FBF4':mk==='Não'?'#FFF3EE':mk==='Recusada'?'#FAF5FF':(i%2?'#FAFBFD':'#fff');
     // probabilidade de aceitação baseada no manual + excel de temas moderáveis
     var ivLow=(r.iv||'').toLowerCase().trim();
     var isDup=ivLow==='moderação por duplicidade';
@@ -750,11 +756,8 @@ function rDiaria(){
       +'<td style="font-size:12px">'+r.iv+'</td>'
       +'<td class="cm" style="font-size:12px;max-width:280px;line-height:1.4">'+r.dor+'</td>'
       +'<td style="white-space:nowrap;padding:8px 14px">'+probHtml+'</td>'
-      +'<td><div style="display:flex;gap:6px;align-items:center">'
-      +'<button onclick="saveM(\''+r.id+'\',\'Sim\')" style="padding:5px 14px;border-radius:20px;border:2px solid '+(mk==='Sim'?'#08B25C':'#E2E8F0')+';background:'+(mk==='Sim'?'#08B25C':'#fff')+';color:'+(mk==='Sim'?'#fff':'#94A3B8')+';font-weight:700;font-size:12px;cursor:pointer">✓ Sim</button>'
-      +'<button onclick="saveM(\''+r.id+'\',\'Não\')" style="padding:5px 14px;border-radius:20px;border:2px solid '+(mk==='Não'?'#FA4C04':'#E2E8F0')+';background:'+(mk==='Não'?'#FA4C04':'#fff')+';color:'+(mk==='Não'?'#fff':'#94A3B8')+';font-weight:700;font-size:12px;cursor:pointer">✗ Não</button>'
-      +(mk==='Pendente'?'<span class="cm" style="font-size:11px">pendente</span>':'')
-      +'</div></td></tr>';
+      +'<td><div style="display:flex;gap:6px;align-items:center;">'      +'<button onclick="saveM(\''+r.id+'\',\'Sim\')" style="padding:5px 14px;border-radius:20px;border:2px solid '+(mk==='Sim'?'#08B25C':'#E2E8F0')+';background:'+(mk==='Sim'?'#08B25C':'#fff')+';color:'+(mk==='Sim'?'#fff':'#94A3B8')+';font-weight:700;font-size:12px;cursor:pointer">✓ Sim</button>'      +'<button onclick="saveM(\''+r.id+'\',\'Não\')" style="padding:5px 14px;border-radius:20px;border:2px solid '+(mk==='Não'?'#FA4C04':'#E2E8F0')+';background:'+(mk==='Não'?'#FA4C04':'#fff')+';color:'+(mk==='Não'?'#fff':'#94A3B8')+';font-weight:700;font-size:12px;cursor:pointer">✗ Não</button>'      +'<button onclick="saveM(\''+r.id+'\',\'Recusada\')" style="padding:5px 14px;border-radius:20px;border:2px solid '+(mk==='Recusada'?'#6B21A8':'#E2E8F0')+';background:'+(mk==='Recusada'?'#6B21A8':'#fff')+';color:'+(mk==='Recusada'?'#fff':'#94A3B8')+';font-weight:700;font-size:12px;cursor:pointer">⊘ Recusada</button>'      +(mk==='Pendente'?'<span class="cm" style="font-size:11px">pendente</span>':'')      +'</div></td></tr>';
+
   }).join(''));
 }
 
