@@ -408,9 +408,23 @@ function loadCloud(cb){
 }
 
 /* MARCAÇÕES */
-function loadM(){try{return JSON.parse(localStorage.getItem(MKEY)||'{}');}catch(e){return {};}}
-function saveM(id,v){
-  var m=loadM();m[id]=v;localStorage.setItem(MKEY,JSON.stringify(m));rDiaria();
+function loadM(){try{return JSON.parse(localStorage.getItem(MKEY)||'{}');}catch(e){return {};}
+function getMk(marks,id){
+  var v=marks[id];
+  if(!v)return{sim:false,nao:false,rec:false};
+  if(typeof v==='string')return{sim:v==='Sim',nao:v==='Não',rec:v==='Recusada'};
+  return{sim:!!v.sim,nao:!!v.nao,rec:!!v.rec};
+}}
+function saveM(id,flag){
+  var m=loadM();
+  // migra formato antigo (string) para objeto
+  if(typeof m[id]==='string'){var old=m[id];m[id]={sim:old==='Sim',nao:old==='Não',rec:old==='Recusada'};}
+  if(!m[id]||typeof m[id]!=='object')m[id]={sim:false,nao:false,rec:false};
+  // toggle: Não é exclusivo com Sim/Recusada; Sim e Recusada podem coexistir
+  if(flag==='nao'){m[id].nao=!m[id].nao;if(m[id].nao){m[id].sim=false;m[id].rec=false;}}
+  else if(flag==='sim'){m[id].sim=!m[id].sim;if(m[id].sim)m[id].nao=false;}
+  else if(flag==='rec'){m[id].rec=!m[id].rec;if(m[id].rec)m[id].nao=false;}
+  localStorage.setItem(MKEY,JSON.stringify(m));rDiaria();
   if(!JK||!JM)return;
   fetch('https://api.jsonbin.io/v3/b/'+JM,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':JK,'X-Bin-Versioning':'false'},body:JSON.stringify({M:m})})
   .catch(function(e){console.warn('Erro marcação:',e);});
@@ -445,10 +459,10 @@ function saveHistorico(cb){
 function fecharDia(){
   var marks=loadM();
   var allIds=DIR_DATA.map(function(d){return d.id;});
-  var sim=allIds.filter(function(id){return marks[id]==='Sim';}).length;
-  var nao=allIds.filter(function(id){return marks[id]==='Não';}).length;
-  var rec=allIds.filter(function(id){return marks[id]==='Recusada';}).length;
-  var pnd=allIds.length-sim-nao-rec;
+  var sim=allIds.filter(function(id){var mk=getMk(marks,id);return mk.sim;}).length;
+  var nao=allIds.filter(function(id){var mk=getMk(marks,id);return mk.nao;}).length;
+  var rec=allIds.filter(function(id){var mk=getMk(marks,id);return mk.rec;}).length;
+  var pnd=allIds.filter(function(id){var mk=getMk(marks,id);return !mk.sim&&!mk.nao&&!mk.rec;}).length;
   var hoje=new Date();
   var dataStr=('0'+hoje.getDate()).slice(-2)+'/'+('0'+(hoje.getMonth()+1)).slice(-2)+'/'+hoje.getFullYear();
   var dataKey=hoje.getFullYear()+'-'+('0'+(hoje.getMonth()+1)).slice(-2)+'-'+('0'+hoje.getDate()).slice(-2);
@@ -662,12 +676,20 @@ function rDiaria(){
   var marks=loadM();
   var data=DIR_DATA.filter(function(d){return(!sk||d.mes>=sk)&&(!ek||d.mes<=ek);});
   if(fi)data=data.filter(function(d){var v=d.iv.toLowerCase().trim();if(fi==='nao')return v==='não';if(fi==='replica')return v==='não foi possível responder réplica';if(fi==='dup')return v==='moderação por duplicidade';return true;});
-  if(ff)data=data.filter(function(d){return(marks[d.id]||'Pendente')===ff;});
+  if(ff){data=data.filter(function(d){
+    var mk=getMk(marks,d.id);
+    var isPnd=!mk.sim&&!mk.nao&&!mk.rec;
+    if(ff==='Sim')return mk.sim;
+    if(ff==='Não')return mk.nao;
+    if(ff==='Recusada')return mk.rec;
+    if(ff==='Pendente')return isPnd;
+    return true;
+  });}
   var allIds=DIR_DATA.map(function(d){return d.id;});
-  var sim=allIds.filter(function(id){return marks[id]==='Sim';}).length;
-  var nao=allIds.filter(function(id){return marks[id]==='Não';}).length;
-  var rec=allIds.filter(function(id){return marks[id]==='Recusada';}).length;
-  var pnd=allIds.length-sim-nao-rec;
+  var sim=allIds.filter(function(id){var mk=getMk(marks,id);return mk.sim;}).length;
+  var nao=allIds.filter(function(id){var mk=getMk(marks,id);return mk.nao;}).length;
+  var rec=allIds.filter(function(id){var mk=getMk(marks,id);return mk.rec;}).length;
+  var pnd=allIds.filter(function(id){var mk=getMk(marks,id);return !mk.sim&&!mk.nao&&!mk.rec;}).length;
   st('dr-cnt',data.length);st('dr-sim',sim);st('dr-nao',nao);st('dr-pnd',pnd);st('dr-rec',rec);
   si('dr-mk',[{l:'Exibindo',v:data.length,c:CC.p},{l:'Sim',v:sim,c:CC.a},{l:'Não',v:nao,c:CC.r},{l:'Pendente',v:pnd,c:CC.w},{l:'Recusada',v:rec,c:'#6B21A8'}].map(function(k){return'<div class="mkpi"><div class="mkpi-v" style="color:'+k.c+'">'+k.v+'</div><div class="mkpi-l">'+k.l+'</div></div>';}).join(''));
   // Mapa de moderabilidade baseado no excel temas_moderaveis_enjoei + manual RA
@@ -729,7 +751,7 @@ function rDiaria(){
   if(!data.length){si('dr-tb','<tr><td colspan="7" style="padding:32px;text-align:center;color:#94A3B8">Nenhum registro encontrado</td></tr>');return;}
   si('dr-tb',data.map(function(r,i){
     var mk=marks[r.id]||'Pendente';
-    var bg=mk==='Sim'?'#F0FBF4':mk==='Não'?'#FFF3EE':mk==='Recusada'?'#FAF5FF':(i%2?'#FAFBFD':'#fff');
+    var mkF=getMk(marks,r.id);var bg=mkF.nao?'#FFF3EE':(mkF.sim&&mkF.rec)?'#FFF8F0':mkF.sim?'#F0FBF4':mkF.rec?'#FAF5FF':(i%2?'#FAFBFD':'#fff');
     // probabilidade de aceitação baseada no manual + excel de temas moderáveis
     var ivLow=(r.iv||'').toLowerCase().trim();
     var isDup=ivLow==='moderação por duplicidade';
@@ -756,7 +778,8 @@ function rDiaria(){
       +'<td style="font-size:12px">'+r.iv+'</td>'
       +'<td class="cm" style="font-size:12px;max-width:280px;line-height:1.4">'+r.dor+'</td>'
       +'<td style="white-space:nowrap;padding:8px 14px">'+probHtml+'</td>'
-      +'<td><div style="display:flex;gap:6px;align-items:center;">'      +'<button onclick="saveM(\''+r.id+'\',\'Sim\')" style="padding:5px 14px;border-radius:20px;border:2px solid '+(mk==='Sim'?'#08B25C':'#E2E8F0')+';background:'+(mk==='Sim'?'#08B25C':'#fff')+';color:'+(mk==='Sim'?'#fff':'#94A3B8')+';font-weight:700;font-size:12px;cursor:pointer">✓ Sim</button>'      +'<button onclick="saveM(\''+r.id+'\',\'Não\')" style="padding:5px 14px;border-radius:20px;border:2px solid '+(mk==='Não'?'#FA4C04':'#E2E8F0')+';background:'+(mk==='Não'?'#FA4C04':'#fff')+';color:'+(mk==='Não'?'#fff':'#94A3B8')+';font-weight:700;font-size:12px;cursor:pointer">✗ Não</button>'      +'<button onclick="saveM(\''+r.id+'\',\'Recusada\')" style="padding:5px 14px;border-radius:20px;border:2px solid '+(mk==='Recusada'?'#6B21A8':'#E2E8F0')+';background:'+(mk==='Recusada'?'#6B21A8':'#fff')+';color:'+(mk==='Recusada'?'#fff':'#94A3B8')+';font-weight:700;font-size:12px;cursor:pointer">⊘ Recusada</button>'      +(mk==='Pendente'?'<span class="cm" style="font-size:11px">pendente</span>':'')      +'</div></td></tr>';
+      +'<td><div style="display:flex;gap:6px;align-items:center;">'      +'<button onclick="saveM(\''+r.id+'\',\'sim\')" style="padding:5px 14px;border-radius:20px;border:2px solid '+(mkF.sim?'#08B25C':'#E2E8F0')+';background:'+(mkF.sim?'#08B25C':'#fff')+';color:'+(mkF.sim?'#fff':'#94A3B8')+';font-weight:700;font-size:12px;cursor:pointer">✓ Sim</button>'      +'<button onclick="saveM(\''+r.id+'\',\'rec\')" style="padding:5px 14px;border-radius:20px;border:2px solid '+(mkF.rec?'#6B21A8':'#E2E8F0')+';background:'+(mkF.rec?'#6B21A8':'#fff')+';color:'+(mkF.rec?'#fff':'#94A3B8')+';font-weight:700;font-size:12px;cursor:pointer">⊘ Recusada</button>'      +'<button onclick="saveM(\''+r.id+'\',\'nao\')" style="padding:5px 14px;border-radius:20px;border:2px solid '+(mkF.nao?'#FA4C04':'#E2E8F0')+';background:'+(mkF.nao?'#FA4C04':'#fff')+';color:'+(mkF.nao?'#fff':'#94A3B8')+';font-weight:700;font-size:12px;cursor:pointer">✗ Não</button>'      +(!mkF.sim&&!mkF.nao&&!mkF.rec?'<span class="cm" style="font-size:11px">pendente</span>':'')      +'</div></td></tr>';
+
 
   }).join(''));
 }
