@@ -820,7 +820,7 @@ function doUpload(inp){
       var acc=0,nacc=0,pnd=0,notaSum=0;
       var bm={},bwk={},dbm={},mot={},newDir=[];
       var ETAGS=['moderação não solicitada (diretriz)','moderação não solicitada (contato central/chatbot)','moderação não solicitada (erro operacional)','moderação não solicitada (incidentes)'];
-      var TAGS_DIR={'não':1,'não foi possível responder réplica':1,'moderação por duplicidade':1};
+      function isDirTag(iv){var v=iv.toLowerCase();return v.indexOf('moderação')>=0||v.indexOf('solicitad')>=0||v==='não'||v.indexOf('réplica')>=0||v.indexOf('contestação')>=0||v.indexOf('duplicidade')>=0||v.indexOf('aceita')>=0||v.indexOf('recusada')>=0;}
       parsed.forEach(function(r){
         notaSum+=r.nota;
         var s2=r.ms.toLowerCase().trim();
@@ -843,7 +843,7 @@ function doUpload(inp){
         if(r.dor&&r.dor!=='nan'&&r.mes){var kk=r.mes+'|||'+r.dor;if(!dbm[kk])dbm[kk]={key:r.mes,dor:r.dor,total:0,notaSum:0,aceitas:0};dbm[kk].total++;dbm[kk].notaSum+=r.nota;if(isA)dbm[kk].aceitas++;}
         if(r.mm&&r.mm!=='nan'&&r.mes){var k2=r.mes+'|||'+r.mm;if(!mot[k2])mot[k2]={key:r.mes,label:ml(r.mes),motivo:r.mm,count:0};mot[k2].count++;}
         var ivl2=r.iv.toLowerCase().trim();
-        if(TAGS_DIR[ivl2])newDir.push({id:r.id,data:r.fdata,mes:r.mes,iv:r.iv,dor:r.dor!=='nan'?r.dor:''});
+        if(isDirTag(r.iv))newDir.push({id:r.id,data:r.fdata,mes:r.mes,iv:r.iv,dor:r.dor!=='nan'?r.dor:''});
       });
       BTOTAL=parsed.length;BACEITA=acc;BNACEITA=nacc;BPEND=pnd;
       BMEDIA=parsed.length?+(notaSum/parsed.length).toFixed(2):0;
