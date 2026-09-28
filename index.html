@@ -499,27 +499,86 @@ function saveDirCloud(cb){
   });
 }
 
+/* migra dados do JSONBin para GitHub uma única vez */
+var JK_OLD='$2a$10$NVJf3rwo0pKOudDzbV0fq.vQwGPxe6EnqyNZDvgfeTFTjLFhvSu5a';
+var JB_OLD='6a381f47da38895dfee798e4';
+var JM_OLD='6a3971fcda38895dfeece66c';
+var JH_OLD='6a48081df5f4af5e295bcedc';
+
+function migrateFromJB(cb){
+  // só migra se GitHub ainda estiver vazio (T===0) e JSONBin tiver dados
+  var migKey='enjoei_migrated_v1';
+  if(localStorage.getItem(migKey)){if(cb)cb();return;}
+  st('omsg','Verificando migração...');
+  fetch('https://api.jsonbin.io/v3/b/'+JB_OLD+'/latest',{headers:{'X-Master-Key':JK_OLD}})
+  .then(function(r){return r.json();})
+  .then(function(j){
+    if(!j||!j.record||!j.record.T){if(cb)cb();return;}
+    var rec=j.record;
+    st('omsg','Migrando base do JSONBin...');
+    // migrate base
+    applyPayload(rec);
+    // migrate DIR_DATA from old format
+    if(rec.DIR&&rec.DIR.length){
+      DIR_DATA=rec.DIR.map(function(r){return{id:r.i||r.id,data:r.dt||r.data,mes:r.ms||r.mes,iv:r.iv,dor:r.dr||r.dor||''};});
+    }
+    // save to GitHub
+    saveCloud(function(){
+      saveDirCloud(function(){
+        // migrate marks
+        fetch('https://api.jsonbin.io/v3/b/'+JM_OLD+'/latest',{headers:{'X-Master-Key':JK_OLD}})
+        .then(function(r){return r.json();})
+        .then(function(jm){
+          var marks=jm&&jm.record&&jm.record.M?jm.record.M:{};
+          localStorage.setItem(MKEY,JSON.stringify(marks));
+          ghPut('marcacoes.json',{M:marks},function(){
+            // migrate historico
+            fetch('https://api.jsonbin.io/v3/b/'+JH_OLD+'/latest',{headers:{'X-Master-Key':JK_OLD}})
+            .then(function(r){return r.json();})
+            .then(function(jh){
+              if(jh&&jh.record&&jh.record.H)historicoLocal=jh.record.H;
+              ghPut('historico.json',{H:historicoLocal},function(){
+                localStorage.setItem(migKey,'1');
+                toast('✅ Dados migrados do JSONBin para GitHub!');
+                if(cb)cb();
+              });
+            }).catch(function(){localStorage.setItem(migKey,'1');if(cb)cb();});
+          });
+        }).catch(function(){localStorage.setItem(migKey,'1');if(cb)cb();});
+      });
+    });
+  })
+  .catch(function(){if(cb)cb();});
+}
+
 function loadCloud(cb){
   document.getElementById('ovl').classList.add('on');
   st('omsg','Carregando dados...');
   ghGet('base.json',function(d){
-    if(d&&d.T){
+    if(d&&d.T&&d.T>0){
+      // GitHub já tem dados — usa direto
       applyPayload(d);
       try{localStorage.setItem(DKEY,JSON.stringify(d));}catch(e){}
+      localStorage.setItem('enjoei_migrated_v1','1');
+      ghGet('diaria.json',function(dd){
+        if(dd&&dd.rows&&dd.rows.length){
+          applyDirPayload(dd);
+          try{localStorage.setItem(DKEY_DIR,JSON.stringify(dd));}catch(e){}
+        } else {
+          try{var raw2=localStorage.getItem(DKEY_DIR);if(raw2)applyDirPayload(JSON.parse(raw2));}catch(e){}
+        }
+        document.getElementById('ovl').classList.remove('on');
+        if(cb)cb();
+      });
     } else {
+      // GitHub vazio — tenta migrar do JSONBin
       try{var raw=localStorage.getItem(DKEY);if(raw)applyPayload(JSON.parse(raw));}catch(e){}
+      try{var raw2=localStorage.getItem(DKEY_DIR);if(raw2)applyDirPayload(JSON.parse(raw2));}catch(e){}
+      migrateFromJB(function(){
+        document.getElementById('ovl').classList.remove('on');
+        if(cb)cb();
+      });
     }
-    // load diaria separately
-    ghGet('diaria.json',function(dd){
-      if(dd&&dd.rows&&dd.rows.length){
-        applyDirPayload(dd);
-        try{localStorage.setItem(DKEY_DIR,JSON.stringify(dd));}catch(e){}
-      } else {
-        try{var raw2=localStorage.getItem(DKEY_DIR);if(raw2)applyDirPayload(JSON.parse(raw2));}catch(e){}
-      }
-      document.getElementById('ovl').classList.remove('on');
-      if(cb)cb();
-    });
   });
 }
 
