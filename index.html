@@ -508,7 +508,29 @@ var JH_OLD='6a48081df5f4af5e295bcedc';
 function migrateFromJB(cb){
   // só migra se GitHub ainda estiver vazio (T===0) e JSONBin tiver dados
   var migKey='enjoei_migrated_v1';
-  if(localStorage.getItem(migKey)){if(cb)cb();return;}
+  var migHistKey='enjoei_migrated_hist_v1';
+  // se já migrou tudo, sai
+  if(localStorage.getItem(migKey)&&localStorage.getItem(migHistKey)){if(cb)cb();return;}
+  // se só falta o histórico, migra só ele
+  if(localStorage.getItem(migKey)&&!localStorage.getItem(migHistKey)){
+    st('omsg','Migrando histórico...');
+    fetch('https://api.jsonbin.io/v3/b/'+JH_OLD+'/latest',{headers:{'X-Master-Key':JK_OLD}})
+    .then(function(r){return r.json();})
+    .then(function(jh){
+      if(jh&&jh.record&&jh.record.H&&jh.record.H.length){
+        historicoLocal=jh.record.H;
+        ghPut('historico.json',{H:historicoLocal},function(){
+          localStorage.setItem(migHistKey,'1');
+          toast('✅ Histórico migrado para GitHub! ('+historicoLocal.length+' registros)');
+          if(cb)cb();
+        });
+      } else {
+        localStorage.setItem(migHistKey,'1');
+        if(cb)cb();
+      }
+    }).catch(function(){localStorage.setItem(migHistKey,'1');if(cb)cb();});
+    return;
+  }
   st('omsg','Verificando migração...');
   fetch('https://api.jsonbin.io/v3/b/'+JB_OLD+'/latest',{headers:{'X-Master-Key':JK_OLD}})
   .then(function(r){return r.json();})
@@ -539,6 +561,7 @@ function migrateFromJB(cb){
               if(jh&&jh.record&&jh.record.H)historicoLocal=jh.record.H;
               ghPut('historico.json',{H:historicoLocal},function(){
                 localStorage.setItem(migKey,'1');
+                localStorage.setItem(migHistKey,'1');
                 toast('✅ Dados migrados do JSONBin para GitHub!');
                 if(cb)cb();
               });
