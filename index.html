@@ -680,7 +680,7 @@ function doUpload(inp){
       parsed.forEach(function(r){
         notaSum+=r.nota;
         var s2=r.ms.toLowerCase().trim();
-        var isA=s2==='aceita',isN=s2==='não aceita'&&(r.iv||'').toLowerCase().trim()!=='moderação por duplicidade',isP=s2==='pendente';
+        var isA=s2==='aceita',isN=s2==='não aceita'&&r.mm.toLowerCase().trim()!=='reclamação em duplicidade',isP=s2==='pendente';
         if(isA)acc++;else if(isN)nacc++;else if(isP)pnd++;
         if(r.mes){
           if(!bm[r.mes])bm[r.mes]={total:0,notaSum:0,aceitas:0,nao_aceita:0,pendente:0,diretriz:0,chatbot:0,erro:0,incidente:0};
